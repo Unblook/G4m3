@@ -130,7 +130,7 @@
   /* ---------- Games view (bigger thumbnails + carousel) ---------- */
   .carousel-wrap {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 14px;
     max-width: 100%;
     margin-top: 10px;
@@ -138,10 +138,10 @@
 
   .carousel-track {
     display: flex;
-    gap: 28px;
+    gap: 32px;
     overflow-x: auto;
     scroll-behavior: smooth;
-    padding: 6px 4px 16px 4px;
+    padding: 6px 4px 34px 4px;
     flex: 1;
     min-width: 0;
     scrollbar-color: #ffffff88 #111;
@@ -168,16 +168,22 @@
   }
 
   .carousel-track .game-card {
-    flex: 0 0 260px;
+    flex: 0 0 340px;
   }
 
   .carousel-track .thumb {
-    height: 170px;
-    font-size: 15px;
+    height: 230px;
+    font-size: 16px;
+  }
+
+  .carousel-track h3 {
+    font-size: 21px;
   }
 
   .carousel-arrow {
     flex-shrink: 0;
+    align-self: flex-end;
+    margin-bottom: 12px;
     background: #0a0a0a;
     border: 2px solid #ffffff55;
     color: #fff;
