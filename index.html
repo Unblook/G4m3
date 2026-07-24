@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G4m3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 180px;
+    flex-shrink: 0;
+    background: #050505;
+    border-right: 2px solid #ffffff22;
+    padding: 30px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sidebar .logo {
+    font-size: 22px;
+    padding: 0 20px 20px 20px;
+    letter-spacing: 1px;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-family: inherit;
+    font-size: 17px;
+    text-align: left;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    border-left: 3px solid transparent;
+  }
+
+  .nav-btn:hover {
+    color: #fff;
+  }
+
+  .nav-btn.active {
+    color: #fff;
+    background: #ffffff0d;
+    border-left: 3px solid #fff;
+    box-shadow: inset 0 0 12px #ffffff22;
+  }
+
+  /* ---------- Main content ---------- */
+  .main {
+    flex: 1;
+    padding: 50px 60px;
+    overflow-x: hidden;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  h1.hero-title {
+    font-size: 40px;
+    margin-bottom: 6px;
+  }
+
+  p.tagline {
+    color: #999;
+    font-size: 16px;
+    margin-bottom: 40px;
+  }
+
+  h2.section-title {
+    font-size: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* ---------- Game grid (Home) ---------- */
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 28px;
+    max-width: 900px;
+  }
+
+  .game-card {
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  .game-card:hover {
+    transform: scale(1.08);
+    border-color: #fff;
+    box-shadow: 0 0 12px 2px #fff, 0 0 30px 6px #ffffffaa;
+    position: relative;
+    z-index: 2;
+  }
+
+  .thumb {
+    width: 100%;
+    height: 110px;
+    background: linear-gradient(135deg, #1a1a1a, #262626);
+    border-radius: 6px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 13px;
+  }
+
+  .game-card h3 {
+    font-size: 18px;
+    font-weight: normal;
+  }
+
+  /* ---------- Games view (bigger thumbnails + carousel) ---------- */
+  .carousel-wrap {
+    position: relative;
+    max-width: 100%;
+    margin-top: 10px;
+  }
+
+  .carousel-track {
+    display: flex;
+    gap: 28px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 6px 4px 20px 4px;
+    scrollbar-width: none;
+  }
+
+  .carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .carousel-track .game-card {
+    flex: 0 0 260px;
+  }
+
+  .carousel-track .thumb {
+    height: 170px;
+    font-size: 15px;
+  }
+
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #0a0a0a;
+    border: 2px solid #ffffff55;
+    color: #fff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    z-index: 3;
+  }
+
+  .carousel-arrow:hover {
+    border-color: #fff;
+    box-shadow: 0 0 10px 2px #fff;
+  }
+
+  .carousel-arrow.left { left: -22px; }
+  .carousel-arrow.right { right: -22px; }
+
+  /* ---------- Game detail view ---------- */
+  .detail-back {
+    background: none;
+    border: 2px solid #ffffff44;
+    color: #ccc;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 30px;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .detail-back:hover {
+    border-color: #fff;
+    color: #fff;
+  }
+
+  .detail-layout {
+    display: flex;
+    gap: 40px;
+    max-width: 900px;
+    flex-wrap: wrap;
+  }
+
+  .detail-thumb {
+    width: 320px;
+    height: 220px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #1a1a1a, #262626);
+    border: 2px solid #ffffff33;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 15px;
+  }
+
+  .detail-info {
+    flex: 1;
+    min-width: 260px;
+  }
+
+  .detail-info h2 {
+    font-size: 30px;
+    margin-bottom: 14px;
+  }
+
+  .detail-info p.desc {
+    color: #bbb;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 30px;
+    border-top: 1px solid #ffffff22;
+    padding-top: 16px;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-item span.label {
+    color: #777;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .meta-item span.value {
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <div class="logo">G4m3</div>
+    <button class="nav-btn active" data-view="home" onclick="showView('home')">Home</button>
+    <button class="nav-btn" data-view="games" onclick="showView('games')">Games</button>
+  </div>
+
+  <div class="main">
+
+    <!-- HOME VIEW -->
+    <section id="view-home" class="view active">
+      <h1 class="hero-title">G4m3</h1>
+      <p class="tagline">A home for the games I've made and other stuff.</p>
+      <h2 class="section-title">Featured games</h2>
+      <div class="game-grid" id="home-grid"></div>
+    </section>
+
+    <!-- GAMES VIEW -->
+    <section id="view-games" class="view">
+      <h2 class="section-title">All games</h2>
+      <div class="carousel-wrap">
+        <button class="carousel-arrow left" onclick="scrollCarousel(-1)">&#10094;</button>
+        <div class="carousel-track" id="games-track" tabindex="0"></div>
+        <button class="carousel-arrow right" onclick="scrollCarousel(1)">&#10095;</button>
+      </div>
+    </section>
+
+    <!-- GAME DETAIL VIEW -->
+    <section id="view-detail" class="view">
+      <button class="detail-back" onclick="showView('games')">&#8592; Back to games</button>
+      <div class="detail-layout">
+        <div class="detail-thumb" id="detail-thumb">thumbnail</div>
+        <div class="detail-info">
+          <h2 id="detail-title"></h2>
+          <p class="desc" id="detail-desc"></p>
+          <div class="meta-row">
+            <div class="meta-item">
+              <span class="label">Storage</span>
+              <span class="value" id="detail-storage"></span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Release date</span>
+              <span class="value" id="detail-date"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+<script>
+  const games = [
+    {
+      id: "neon-runner",
+      title: "Neon Runner",
+      desc: "A fast-paced endless runner through a glowing neon city. Dodge obstacles, chain combos, and beat your best distance.",
+      storage: "85 MB",
+      date: "March 2025"
+    },
+    {
+      id: "block-drift",
+      title: "Block Drift",
+      desc: "A physics-based puzzle game where you stack, tilt, and drift blocks into place before the timer runs out.",
+      storage: "62 MB",
+      date: "June 2025"
+    },
+    {
+      id: "star-hopper",
+      title: "Star Hopper",
+      desc: "Platform across floating islands in space, collecting stars and unlocking new hopper abilities.",
+      storage: "140 MB",
+      date: "September 2025"
+    },
+    {
+      id: "grid-siege",
+      title: "Grid Siege",
+      desc: "A tactical arcade shooter set on a shifting grid battlefield. Survive waves and upgrade your loadout.",
+      storage: "110 MB",
+      date: "January 2026"
+    }
+  ];
+
+  function renderCard(game) {
+    const card = document.createElement("div");
+    card.className = "game-card";
+    card.onclick = () => showDetail(game.id);
+    card.innerHTML = `
+      <div class="thumb">thumbnail</div>
+      <h3>${game.title}</h3>
+    `;
+    return card;
+  }
+
+  function renderGrids() {
+    const homeGrid = document.getElementById("home-grid");
+    const gamesTrack = document.getElementById("games-track");
+    homeGrid.innerHTML = "";
+    gamesTrack.innerHTML = "";
+    games.forEach(game => {
+      homeGrid.appendChild(renderCard(game));
+      gamesTrack.appendChild(renderCard(game));
+    });
+  }
+
+  function showView(view) {
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    document.getElementById("view-" + view).classList.add("active");
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    const navBtn = document.querySelector(`.nav-btn[data-view="${view}"]`);
+    if (navBtn) navBtn.classList.add("active");
+  }
+
+  function showDetail(id) {
+    const game = games.find(g => g.id === id);
+    if (!game) return;
+    document.getElementById("detail-title").textContent = game.title;
+    document.getElementById("detail-desc").textContent = game.desc;
+    document.getElementById("detail-storage").textContent = game.storage;
+    document.getElementById("detail-date").textContent = game.date;
+    showView("detail");
+  }
+
+  function scrollCarousel(direction) {
+    const track = document.getElementById("games-track");
+    track.scrollBy({ left: direction * 300, behavior: "smooth" });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    const gamesView = document.getElementById("view-games");
+    if (!gamesView.classList.contains("active")) return;
+    if (e.key === "ArrowLeft") scrollCarousel(-1);
+    if (e.key === "ArrowRight") scrollCarousel(1);
+  });
+
+  renderGrids();
+</script>
+
+</body>
+</html>
