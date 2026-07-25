@@ -120,6 +120,20 @@
     justify-content: center;
     color: #666;
     font-size: 13px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .thumb-fallback {
+    display: none;
+    align-items: center;
+    justify-content: center;
   }
 
   .game-card h3 {
@@ -241,6 +255,15 @@
     justify-content: center;
     color: #666;
     font-size: 15px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .detail-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
   }
 
   .detail-info {
@@ -314,7 +337,10 @@
     <section id="view-detail" class="view">
       <button class="detail-back" onclick="showView('games')">&#8592; Back to games</button>
       <div class="detail-layout">
-        <div class="detail-thumb" id="detail-thumb">thumbnail</div>
+        <div class="detail-thumb" id="detail-thumb">
+          <img id="detail-img" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <span class="thumb-fallback">thumbnail</span>
+        </div>
         <div class="detail-info">
           <h2 id="detail-title"></h2>
           <p class="desc" id="detail-desc"></p>
@@ -336,42 +362,115 @@
 
 <script>
   const games = [
-    {
-      id: "neon-runner",
-      title: "Neon Runner",
-      desc: "A fast-paced endless runner through a glowing neon city. Dodge obstacles, chain combos, and beat your best distance.",
-      storage: "85 MB",
-      date: "March 2025"
-    },
-    {
-      id: "block-drift",
-      title: "Block Drift",
-      desc: "A physics-based puzzle game where you stack, tilt, and drift blocks into place before the timer runs out.",
-      storage: "62 MB",
-      date: "June 2025"
-    },
-    {
-      id: "star-hopper",
-      title: "Star Hopper",
-      desc: "Platform across floating islands in space, collecting stars and unlocking new hopper abilities.",
-      storage: "140 MB",
-      date: "September 2025"
-    },
-    {
-      id: "grid-siege",
-      title: "Grid Siege",
-      desc: "A tactical arcade shooter set on a shifting grid battlefield. Survive waves and upgrade your loadout.",
-      storage: "110 MB",
-      date: "January 2026"
-    }
-  ];
+    { id: "10minutestilldawn", title: "10 Minutes Till Dawn" },
+    { id: "1v1lol", title: "1v1.LOL" },
+    { id: "amandatheadventurer", title: "Amanda the Adventurer" },
+    { id: "backrooms", title: "The Backrooms" },
+    { id: "badparenting", title: "Bad Parenting" },
+    { id: "baldisbasics", title: "Baldi's Basics" },
+    { id: "bankrobbery1", title: "Bank Robbery" },
+    { id: "bankrobbery2", title: "Bank Robbery 2" },
+    { id: "bankrobbery3", title: "Bank Robbery 3" },
+    { id: "baseballbros", title: "Baseball Bros" },
+    { id: "basketballstars", title: "Basketball Stars" },
+    { id: "basketbros", title: "Basket Bros" },
+    { id: "basketrandom", title: "Basket Random" },
+    { id: "bendy", title: "Bendy and the Ink Machine" },
+    { id: "bindingofisaac", title: "The Binding of Isaac" },
+    { id: "bitlife", title: "BitLife" },
+    { id: "bitplanes", title: "Bit Planes" },
+    { id: "blockblast", title: "Block Blast" },
+    { id: "bottlejump3d", title: "Bottle Jump 3D" },
+    { id: "bouncemasters", title: "Bouncemasters" },
+    { id: "boxingrandom", title: "Boxing Random" },
+    { id: "buckshotroulette", title: "Buckshot Roulette" },
+    { id: "buildnow", title: "Build Now GG" },
+    { id: "cookieclicker", title: "Cookie Clicker" },
+    { id: "coreball", title: "Core Ball" },
+    { id: "crossyroad", title: "Crossy Road" },
+    { id: "cuphead", title: "Cuphead" },
+    { id: "cuttherope", title: "Cut the Rope" },
+    { id: "doodlebaseball", title: "Doodle Baseball" },
+    { id: "doodlejump", title: "Doodle Jump" },
+    { id: "doom1", title: "DOOM" },
+    { id: "doom2", title: "DOOM II" },
+    { id: "doom3", title: "DOOM 3" },
+    { id: "driftboss", title: "Drift Boss" },
+    { id: "drifthunters", title: "Drift Hunters" },
+    { id: "endoparasitic1", title: "Endoparasitic" },
+    { id: "endoparasitic2", title: "Endoparasitic 2" },
+    { id: "escaperoad1", title: "Escape Road" },
+    { id: "escaperoad2", title: "Escape Road 2" },
+    { id: "escaperoad3", title: "Escape Road 3" },
+    { id: "fallout", title: "Fallout" },
+    { id: "fearstofathom", title: "Fears to Fathom" },
+    { id: "ffps", title: "Freddy Fazbear's Pizzeria Simulator" },
+    { id: "flappybird", title: "Flappy Bird" },
+    { id: "fnac1", title: "Five Nights at Candy's" },
+    { id: "fnac2", title: "Five Nights at Candy's 2" },
+    { id: "fnaf1", title: "Five Nights at Freddy's" },
+    { id: "fnaf2", title: "Five Nights at Freddy's 2" },
+    { id: "fnaf3", title: "Five Nights at Freddy's 3" },
+    { id: "fnaf4", title: "Five Nights at Freddy's 4" },
+    { id: "fnaf4halloween", title: "Five Nights at Freddy's 4: Halloween Edition" },
+    { id: "fnafsl", title: "Five Nights at Freddy's: Sister Location" },
+    { id: "footballbros", title: "Football Bros" },
+    { id: "fruitninja", title: "Fruit Ninja" },
+    { id: "gag", title: "Grow a Garden" },
+    { id: "geometrydash", title: "Geometry Dash" },
+    { id: "gettingoverit", title: "Getting Over It" },
+    { id: "granny1", title: "Granny" },
+    { id: "granny2", title: "Granny 2" },
+    { id: "granny3", title: "Granny 3" },
+    { id: "halflife", title: "Half-Life" },
+    { id: "hillclimbracing", title: "Hill Climb Racing" },
+    { id: "hollowknight", title: "Hollow Knight" },
+    { id: "ironlung", title: "Iron Lung" },
+    { id: "jellydrift", title: "Jelly Drift" },
+    { id: "jetpackjoyride", title: "Jetpack Joyride" },
+    { id: "johnnytrigger", title: "Johnny Trigger" },
+    { id: "kindergarten1", title: "Kindergarten" },
+    { id: "kindergarten2", title: "Kindergarten 2" },
+    { id: "kindergarten3", title: "Kindergarten 3" },
+    { id: "learntofly3", title: "Learn to Fly 3" },
+    { id: "melonplayground", title: "Melon Playground" },
+    { id: "motox3m", title: "Moto X3M" },
+    { id: "nazizombies", title: "Nazi Zombies" },
+    { id: "omori", title: "OMORI" },
+    { id: "ovo", title: "OvO" },
+    { id: "papersplease", title: "Papers, Please" },
+    { id: "peggle", title: "Peggle" },
+    { id: "pixelgun", title: "Pixel Gun 3D" },
+    { id: "plantsvszombies1", title: "Plants vs. Zombies" },
+    { id: "plantsvszombies2", title: "Plants vs. Zombies 2" },
+    { id: "pokemon", title: "Pokémon" },
+    { id: "raft", title: "Raft" },
+    { id: "ragdollarchers", title: "Ragdoll Archers" },
+    { id: "ragdollhit", title: "Ragdoll Hit" },
+    { id: "repo", title: "R.E.P.O." },
+    { id: "retrobowl", title: "Retro Bowl" },
+    { id: "retrobowlcollege", title: "Retro Bowl College" },
+    { id: "schoolboyrunaway", title: "Schoolboy Runaway" },
+    { id: "silksong", title: "Hollow Knight: Silksong" },
+    { id: "slenderman", title: "Slender Man" },
+    { id: "slimerancher", title: "Slime Rancher" },
+    { id: "ucn", title: "Ultimate Custom Night" }
+  ].map(g => ({
+    ...g,
+    desc: "Description coming soon.",
+    storage: "—",
+    date: "—"
+  }));
 
   function renderCard(game) {
     const card = document.createElement("div");
     card.className = "game-card";
     card.onclick = () => showDetail(game.id);
     card.innerHTML = `
-      <div class="thumb">thumbnail</div>
+      <div class="thumb">
+        <img src="thumbnails/${game.id}.png" alt="${game.title}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <span class="thumb-fallback">thumbnail</span>
+      </div>
       <h3>${game.title}</h3>
     `;
     return card;
@@ -400,6 +499,11 @@
     document.getElementById("detail-desc").textContent = game.desc;
     document.getElementById("detail-storage").textContent = game.storage;
     document.getElementById("detail-date").textContent = game.date;
+    const img = document.getElementById("detail-img");
+    img.style.display = "block";
+    img.src = "thumbnails/" + game.id + ".png";
+    img.alt = game.title;
+    document.querySelector("#detail-thumb .thumb-fallback").style.display = "none";
     showView("detail");
   }
 
