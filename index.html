@@ -95,9 +95,10 @@
     background: #0a0a0a;
     border: 2px solid #ffffff33;
     border-radius: 10px;
-    padding: 16px;
+    padding: 0 0 14px 0;
     text-align: center;
     cursor: pointer;
+    overflow: hidden;
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
   }
 
@@ -111,10 +112,10 @@
 
   .thumb {
     width: 100%;
-    height: 110px;
+    aspect-ratio: 4 / 3;
     background: linear-gradient(135deg, #1a1a1a, #262626);
-    border-radius: 6px;
-    margin-bottom: 12px;
+    border-radius: 0;
+    margin-bottom: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -139,6 +140,8 @@
   .game-card h3 {
     font-size: 18px;
     font-weight: normal;
+    margin-top: 12px;
+    padding: 0 10px;
   }
 
   /* ---------- Games view (bigger thumbnails + carousel) ---------- */
@@ -186,7 +189,6 @@
   }
 
   .carousel-track .thumb {
-    height: 230px;
     font-size: 16px;
   }
 
@@ -365,7 +367,7 @@
     { id: "10minutestilldawn", title: "10 Minutes Till Dawn" },
     { id: "1v1lol", title: "1v1.LOL" },
     { id: "amandatheadventurer", title: "Amanda the Adventurer" },
-    { id: "backrooms", title: "The Backrooms" },
+    { id: "backrooms", title: "Backrooms" },
     { id: "badparenting", title: "Bad Parenting" },
     { id: "baldisbasics", title: "Baldi's Basics" },
     { id: "bankrobbery1", title: "Bank Robbery" },
@@ -390,7 +392,6 @@
     { id: "crossyroad", title: "Crossy Road" },
     { id: "cuphead", title: "Cuphead" },
     { id: "cuttherope", title: "Cut the Rope" },
-    { id: "doodlebaseball", title: "Doodle Baseball" },
     { id: "doodlejump", title: "Doodle Jump" },
     { id: "doom1", title: "DOOM" },
     { id: "doom2", title: "DOOM II" },
@@ -419,6 +420,7 @@
     { id: "gag", title: "Grow a Garden" },
     { id: "geometrydash", title: "Geometry Dash" },
     { id: "gettingoverit", title: "Getting Over It" },
+    { id: "doodlebaseball", title: "Doodle Baseball" },
     { id: "granny1", title: "Granny" },
     { id: "granny2", title: "Granny 2" },
     { id: "granny3", title: "Granny 3" },
