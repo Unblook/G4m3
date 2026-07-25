@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title></title>
+<title>Games</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -78,9 +78,21 @@
     margin-bottom: 40px;
   }
 
-  h2.section-title {
-    font-size: 24px;
-    margin-bottom: 24px;
+  .games-label {
+    position: absolute;
+    top: 14px;
+    right: 24px;
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 0.5px;
+  }
+
+  #view-games {
+    position: relative;
+  }
+
+  #view-games .carousel-wrap {
+    margin-top: 4px;
   }
 
   /* ---------- Game grid (Home) ---------- */
@@ -327,7 +339,7 @@
 
     <!-- GAMES VIEW -->
     <section id="view-games" class="view">
-      <h2 class="section-title">All games</h2>
+      <span class="games-label">All games</span>
       <div class="carousel-wrap">
         <button class="carousel-arrow left" onclick="scrollCarousel(-1)">&#10094;</button>
         <div class="carousel-track" id="games-track" tabindex="0"></div>
@@ -392,6 +404,7 @@
     { id: "crossyroad", title: "Crossy Road" },
     { id: "cuphead", title: "Cuphead" },
     { id: "cuttherope", title: "Cut the Rope" },
+    { id: "doodlebaseball", title: "Doodle Baseball" }, 
     { id: "doodlejump", title: "Doodle Jump" },
     { id: "doom1", title: "DOOM" },
     { id: "doom2", title: "DOOM II" },
@@ -420,7 +433,6 @@
     { id: "gag", title: "Grow a Garden" },
     { id: "geometrydash", title: "Geometry Dash" },
     { id: "gettingoverit", title: "Getting Over It" },
-    { id: "doodlebaseball", title: "Doodle Baseball" },
     { id: "granny1", title: "Granny" },
     { id: "granny2", title: "Granny 2" },
     { id: "granny3", title: "Granny 3" },
