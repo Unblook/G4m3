@@ -303,6 +303,24 @@
     margin-bottom: 24px;
   }
 
+  .play-btn {
+    display: inline-block;
+    background: #fff;
+    color: #000;
+    font-family: inherit;
+    font-size: 16px;
+    text-decoration: none;
+    padding: 10px 28px;
+    border-radius: 6px;
+    margin-bottom: 26px;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+
+  .play-btn:hover {
+    box-shadow: 0 0 12px 2px #fff;
+    transform: scale(1.05);
+  }
+
   .meta-row {
     display: flex;
     gap: 30px;
@@ -421,6 +439,7 @@
         <div class="detail-info">
           <h2 id="detail-title"></h2>
           <p class="desc" id="detail-desc"></p>
+          <a id="detail-play" href="#" class="play-btn">Play</a>
           <div class="meta-row">
             <div class="meta-item">
               <span class="label">Storage</span>
@@ -531,7 +550,26 @@
     { id: "silksong", title: "Hollow Knight: Silksong" },
     { id: "slenderman", title: "Slender Man" },
     { id: "slimerancher", title: "Slime Rancher" },
-    { id: "ucn", title: "Ultimate Custom Night" }
+    { id: "slope", title: "Slope" },
+    { id: "smashkarts", title: "Smash Karts" },
+    { id: "snowrider3d", title: "Snow Rider 3D" },
+    { id: "soccerrandom", title: "Soccer Random" },
+    { id: "stardewvalley", title: "Stardew Valley" },
+    { id: "stealabrainrot", title: "Steal a Brainrot" },
+    { id: "stickmanhook", title: "Stickman Hook" },
+    { id: "superhot", title: "SUPERHOT" },
+    { id: "supermario64", title: "Super Mario 64" },
+    { id: "supermariobros", title: "Super Mario Bros." },
+    { id: "survivalrace", title: "Survival Race" },
+    { id: "terraria", title: "Terraria" },
+    { id: "thatsnotmyneighbor", title: "That's Not My Neighbor" },
+    { id: "theyarecoming", title: "They Are Coming" },
+    { id: "tinyfishing", title: "Tiny Fishing" },
+    { id: "tombofthemask", title: "Tomb of the Mask" },
+    { id: "ucn", title: "Ultimate Custom Night" },
+    { id: "ultrakill", title: "ULTRAKILL" },
+    { id: "undertale", title: "Undertale" },
+    { id: "volleyrandom", title: "Volley Random" }
   ].map(g => ({
     ...g,
     desc: "Description coming soon.",
@@ -576,6 +614,7 @@
     document.getElementById("detail-desc").textContent = game.desc;
     document.getElementById("detail-storage").textContent = game.storage;
     document.getElementById("detail-date").textContent = game.date;
+    document.getElementById("detail-play").href = "games/" + game.id + ".html";
     const img = document.getElementById("detail-img");
     img.style.display = "block";
     img.src = "thumbnails/" + game.id + ".png";
