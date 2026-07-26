@@ -144,7 +144,8 @@
   .thumb img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
+    object-position: top;
     display: block;
   }
 
@@ -203,7 +204,7 @@
   }
 
   .carousel-track .game-card {
-    flex: 0 0 340px;
+    flex: 0 0 calc((100% - 64px) / 3);
   }
 
   .carousel-track .thumb {
