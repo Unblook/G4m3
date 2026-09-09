@@ -473,6 +473,117 @@
     flex: 1;
   }
 
+  /* ---------- Auth Modal ---------- */
+  .auth-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .auth-modal-overlay.show {
+    display: flex;
+  }
+
+  .auth-modal {
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 14px;
+    padding: 40px 36px;
+    width: 360px;
+    max-width: 88vw;
+    position: relative;
+    text-align: center;
+  }
+
+  .auth-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .auth-modal-close:hover {
+    color: #fff;
+  }
+
+  .auth-modal-logo {
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+
+  .auth-modal-title {
+    font-size: 21px;
+    font-weight: normal;
+    margin-bottom: 24px;
+  }
+
+  #auth-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .auth-modal-submit {
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  .auth-modal-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #777;
+    font-size: 13px;
+    margin: 20px 0 16px 0;
+  }
+
+  .auth-modal-divider::before,
+  .auth-modal-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #ffffff33;
+  }
+
+  .auth-modal-oauth {
+    width: 100%;
+    background: #111;
+    border: 2px solid #ffffff33;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: border-color 0.15s ease;
+  }
+
+  .auth-modal-oauth:hover {
+    border-color: #fff;
+  }
+
+  .auth-modal-toggle {
+    font-size: 14px;
+    color: #999;
+    margin-top: 14px;
+  }
+
+  .auth-modal-toggle a {
+    color: #fff;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
   /* ---------- Mobile responsiveness ---------- */
   @media (max-width: 700px) {
     .sidebar {
@@ -542,6 +653,32 @@
     <button class="nav-btn" data-view="profile" onclick="showView('profile')">Profile</button>
     <button class="nav-btn" data-view="friends" onclick="showView('friends')">Friends</button>
     <button class="nav-btn" data-view="chat" onclick="showView('chat')">Chat</button>
+  </div>
+
+  <div id="auth-modal-overlay" class="auth-modal-overlay">
+    <div class="auth-modal">
+      <button class="auth-modal-close" onclick="closeAuthModal()">&times;</button>
+      <div class="auth-modal-logo">&#127918;</div>
+      <h2 class="auth-modal-title" id="auth-modal-title">Sign in to Games</h2>
+
+      <div id="auth-modal-form">
+        <input type="text" id="modal-identifier" placeholder="Email or Username" class="auth-input">
+        <input type="password" id="modal-password" placeholder="Password" class="auth-input" onkeydown="if(event.key==='Enter') handleModalSubmit();">
+        <button class="play-btn auth-modal-submit" id="auth-modal-submit-btn" onclick="handleModalSubmit()">Sign In</button>
+      </div>
+
+      <p id="auth-modal-error" class="auth-error"></p>
+
+      <div class="auth-modal-divider"><span>or</span></div>
+
+      <button class="auth-modal-oauth" onclick="handleGoogleSignIn()">Continue with Google</button>
+      <button class="auth-modal-oauth" onclick="handleAnonymousSignIn()">Continue as Guest</button>
+
+      <p class="auth-modal-toggle">
+        <span id="auth-modal-toggle-text">New here?</span>
+        <a href="#" onclick="toggleAuthMode(); return false;" id="auth-modal-toggle-link">Create an account</a>
+      </p>
+    </div>
   </div>
 
   <div class="main">
@@ -631,34 +768,8 @@
       <h1 class="hero-title">Profile</h1>
 
       <div id="auth-logged-out">
-        <div class="auth-box">
-          <h3 class="auth-heading">Sign in with Email</h3>
-          <input type="email" id="auth-email" placeholder="Email" class="auth-input">
-          <input type="password" id="auth-password" placeholder="Password" class="auth-input">
-          <div class="auth-btn-row">
-            <button class="play-btn" onclick="handleSignUp()">Sign Up</button>
-            <button class="play-btn" onclick="handleSignIn()">Sign In</button>
-          </div>
-        </div>
-
-        <div class="auth-box">
-          <h3 class="auth-heading">Sign in with Username</h3>
-          <input type="text" id="auth-username" placeholder="Username" class="auth-input">
-          <input type="password" id="auth-username-password" placeholder="Password" class="auth-input">
-          <div class="auth-btn-row">
-            <button class="play-btn" onclick="handleUsernameSignUp()">Sign Up</button>
-            <button class="play-btn" onclick="handleUsernameSignIn()">Sign In</button>
-          </div>
-        </div>
-
-        <div class="auth-box">
-          <div class="auth-btn-row">
-            <button class="play-btn" onclick="handleGoogleSignIn()">Continue with Google</button>
-            <button class="play-btn" onclick="handleAnonymousSignIn()">Continue as Guest</button>
-          </div>
-        </div>
-
-        <p id="auth-error" class="auth-error"></p>
+        <p class="profile-line">You're not signed in.</p>
+        <button class="play-btn" onclick="openAuthModal()">Sign In</button>
       </div>
 
       <div id="auth-logged-in" style="display:none;">
@@ -992,13 +1103,13 @@
   // Realtime Database page in the console once you create it, e.g.
   // "https://YOUR_PROJECT-default-rtdb.firebaseio.com"
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyB613MvmPi4V8Kh2BRNBL64LrTRRu0Ao0I",
+    authDomain: "g4m3-30860.firebaseapp.com",
+    databaseURL: "https://g4m3-30860-default-rtdb.firebaseio.com",
+    projectId: "g4m3-30860",
+    storageBucket: "g4m3-30860.firebasestorage.app",
+    messagingSenderId: "747989600925",
+    appId: "1:747989600925:web:c1f5cc4608813e27a76274"
   };
   // ----------------------------------------------------------------------------
 
@@ -1016,94 +1127,51 @@
     document.getElementById(id).textContent = message || "";
   }
 
-  window.handleSignUp = async function () {
-    setAuthError("auth-error", "");
-    const email = document.getElementById("auth-email").value.trim();
-    const password = document.getElementById("auth-password").value;
-    try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, "users", cred.user.uid), {
-        email: email,
-        friends: []
-      });
-    } catch (err) {
-      setAuthError("auth-error", err.message);
-    }
-  };
-
-  window.handleSignIn = async function () {
-    setAuthError("auth-error", "");
-    const email = document.getElementById("auth-email").value.trim();
-    const password = document.getElementById("auth-password").value;
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err) {
-      setAuthError("auth-error", err.message);
-    }
-  };
-
   window.handleSignOut = async function () {
     await signOut(auth);
   };
 
   const USERNAME_DOMAIN = "@g4m3.local";
 
-  window.handleUsernameSignUp = async function () {
-    setAuthError("auth-error", "");
-    const username = document.getElementById("auth-username").value.trim().toLowerCase();
-    const password = document.getElementById("auth-username-password").value;
-    if (!username || !password) {
-      setAuthError("auth-error", "Enter a username and password.");
-      return;
-    }
+  async function performEmailSignUp(email, password) {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db, "users", cred.user.uid), { email: email, friends: [] });
+  }
+
+  async function performEmailSignIn(email, password) {
+    await signInWithEmailAndPassword(auth, email, password);
+  }
+
+  async function performUsernameSignUp(username, password) {
     const syntheticEmail = username + USERNAME_DOMAIN;
     const usernameRef = doc(db, "usernames", username);
-    try {
-      // Reserve the username atomically first, so two people can't grab the same one at once.
-      await runTransaction(db, async (tx) => {
-        const existing = await tx.get(usernameRef);
-        if (existing.exists()) {
-          throw new Error("That username is already taken.");
-        }
-        tx.set(usernameRef, { email: syntheticEmail, reservedAt: Date.now() });
-      });
-    } catch (err) {
-      setAuthError("auth-error", err.message);
-      return;
-    }
+    await runTransaction(db, async (tx) => {
+      const existing = await tx.get(usernameRef);
+      if (existing.exists()) {
+        throw new Error("That username is already taken.");
+      }
+      tx.set(usernameRef, { email: syntheticEmail, reservedAt: Date.now() });
+    });
     try {
       const cred = await createUserWithEmailAndPassword(auth, syntheticEmail, password);
       await setDoc(doc(db, "users", cred.user.uid), { username: username, friends: [] });
       await setDoc(usernameRef, { email: syntheticEmail, uid: cred.user.uid }, { merge: true });
     } catch (err) {
-      // Roll back the reservation if account creation failed
       await deleteDoc(usernameRef).catch(() => {});
-      setAuthError("auth-error", err.message);
+      throw err;
     }
-  };
+  }
 
-  window.handleUsernameSignIn = async function () {
-    setAuthError("auth-error", "");
-    const username = document.getElementById("auth-username").value.trim().toLowerCase();
-    const password = document.getElementById("auth-username-password").value;
-    if (!username || !password) {
-      setAuthError("auth-error", "Enter a username and password.");
-      return;
+  async function performUsernameSignIn(username, password) {
+    const usernameSnap = await getDoc(doc(db, "usernames", username));
+    if (!usernameSnap.exists()) {
+      throw new Error("No account with that username.");
     }
-    try {
-      const usernameSnap = await getDoc(doc(db, "usernames", username));
-      if (!usernameSnap.exists()) {
-        setAuthError("auth-error", "No account with that username.");
-        return;
-      }
-      await signInWithEmailAndPassword(auth, usernameSnap.data().email, password);
-    } catch (err) {
-      setAuthError("auth-error", err.message);
-    }
-  };
+    await signInWithEmailAndPassword(auth, usernameSnap.data().email, password);
+  }
 
   window.handleGoogleSignIn = async function () {
-    setAuthError("auth-error", "");
+    setAuthError("auth-modal-error", "");
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
@@ -1113,12 +1181,12 @@
         await setDoc(userRef, { email: result.user.email, friends: [] });
       }
     } catch (err) {
-      setAuthError("auth-error", err.message);
+      setAuthError("auth-modal-error", err.message);
     }
   };
 
   window.handleAnonymousSignIn = async function () {
-    setAuthError("auth-error", "");
+    setAuthError("auth-modal-error", "");
     try {
       const result = await signInAnonymously(auth);
       const userRef = doc(db, "users", result.user.uid);
@@ -1127,7 +1195,66 @@
         await setDoc(userRef, { email: "Guest", friends: [] });
       }
     } catch (err) {
-      setAuthError("auth-error", err.message);
+      setAuthError("auth-modal-error", err.message);
+    }
+  };
+
+  // ---- Auth Modal ----
+  let authModalMode = "signin";
+
+  window.openAuthModal = function () {
+    document.getElementById("auth-modal-overlay").classList.add("show");
+  };
+
+  window.closeAuthModal = function () {
+    document.getElementById("auth-modal-overlay").classList.remove("show");
+  };
+
+  window.toggleAuthMode = function () {
+    authModalMode = authModalMode === "signin" ? "signup" : "signin";
+    const title = document.getElementById("auth-modal-title");
+    const submitBtn = document.getElementById("auth-modal-submit-btn");
+    const toggleText = document.getElementById("auth-modal-toggle-text");
+    const toggleLink = document.getElementById("auth-modal-toggle-link");
+    if (authModalMode === "signup") {
+      title.textContent = "Create your account";
+      submitBtn.textContent = "Sign Up";
+      toggleText.textContent = "Already have an account?";
+      toggleLink.textContent = "Sign in";
+    } else {
+      title.textContent = "Sign in to Games";
+      submitBtn.textContent = "Sign In";
+      toggleText.textContent = "New here?";
+      toggleLink.textContent = "Create an account";
+    }
+    setAuthError("auth-modal-error", "");
+  };
+
+  window.handleModalSubmit = async function () {
+    setAuthError("auth-modal-error", "");
+    const identifier = document.getElementById("modal-identifier").value.trim();
+    const password = document.getElementById("modal-password").value;
+    if (!identifier || !password) {
+      setAuthError("auth-modal-error", "Enter your info and password.");
+      return;
+    }
+    const isEmail = identifier.includes("@");
+    try {
+      if (authModalMode === "signup") {
+        if (isEmail) {
+          await performEmailSignUp(identifier, password);
+        } else {
+          await performUsernameSignUp(identifier.toLowerCase(), password);
+        }
+      } else {
+        if (isEmail) {
+          await performEmailSignIn(identifier, password);
+        } else {
+          await performUsernameSignIn(identifier.toLowerCase(), password);
+        }
+      }
+    } catch (err) {
+      setAuthError("auth-modal-error", err.message);
     }
   };
 
@@ -1205,6 +1332,12 @@
     document.getElementById("friends-logged-in").style.display = loggedIn;
     document.getElementById("chat-logged-out").style.display = loggedOut;
     document.getElementById("chat-logged-in").style.display = loggedIn;
+
+    if (user) {
+      closeAuthModal();
+    } else {
+      openAuthModal();
+    }
 
     if (user) {
       let label = user.displayName || user.email;
