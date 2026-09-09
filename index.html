@@ -345,6 +345,21 @@
     font-size: 16px;
   }
 
+  /* ---------- Unblocked Youtube view ---------- */
+  .yt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    max-width: 1000px;
+  }
+
+  .yt-grid img {
+    width: 100%;
+    border-radius: 8px;
+    border: 2px solid #ffffff33;
+    display: block;
+  }
+
   /* ---------- Mobile responsiveness ---------- */
   @media (max-width: 700px) {
     .sidebar {
@@ -410,6 +425,7 @@
     <div class="logo">Games</div>
     <button class="nav-btn active" data-view="home" onclick="showView('home')">Home</button>
     <button class="nav-btn" data-view="games" onclick="showView('games')">Games</button>
+    <button class="nav-btn" data-view="youtube" onclick="showView('youtube')">Unblocked Youtube</button>
   </div>
 
   <div class="main">
@@ -451,6 +467,19 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- UNBLOCKED YOUTUBE VIEW -->
+    <section id="view-youtube" class="view">
+      <h1 class="hero-title">Unblocked Youtube</h1>
+      <a href="https://youtube.com" target="_blank" class="play-btn" style="margin-bottom: 30px; display: inline-block;">Youtube</a>
+      <div class="yt-grid">
+        <img src="thumbnails/yt1.png" alt="Youtube screenshot 1">
+        <img src="thumbnails/yt2.png" alt="Youtube screenshot 2">
+        <img src="thumbnails/yt3.png" alt="Youtube screenshot 3">
+        <img src="thumbnails/yt4.png" alt="Youtube screenshot 4">
+        <img src="thumbnails/yt5.png" alt="Youtube screenshot 5">
       </div>
     </section>
 
