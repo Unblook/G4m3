@@ -649,6 +649,96 @@
     date: "—"
   }));
 
+  // Maps a game's id to its actual filename in /games, when it differs from "<id>.html"
+  const gameFileOverrides = {
+    "bitlife": "bitLife.html",
+    "bitplanes": "BitPlanes.html",
+    "blockblast": "Block Blast.html",
+    "bottlejump3d": "Bottle Jump 3D.html",
+    "bouncemasters": "Bouncemasters.html",
+    "boxingrandom": "Boxing Random.html",
+    "buckshotroulette": "Buckshot Roulette.html",
+    "buildnow": "BuildNow.gg.html",
+    "cookieclicker": "Cookie Clicker.html",
+    "coreball": "Coreball.html",
+    "crossyroad": "Crossy Road.html",
+    "cuphead": "Cuphead.html",
+    "cuttherope": "Cut the Rope.html",
+    "doodlejump": "Doodle Jump.html",
+    "doom1": "DOOM.html",
+    "doom2": "Doom 2.html",
+    "doom3": "Doom 3.html",
+    "driftboss": "Drift Boss.html",
+    "drifthunters": "Drift Hunters.html",
+    "endoparasitic1": "Endoparasitic.html",
+    "endoparasitic2": "Endoparasitic 2.html",
+    "escaperoad1": "Escape Road.html",
+    "escaperoad2": "Escape Road 2.html",
+    "escaperoad3": "Escape Road 3.html",
+    "fallout": "Fallout.html",
+    "fearstofathom": "Fears to Fathom_ Home Alone.html",
+    "ffps": "Five Nights at Freddy's_ Pizza Simulator.html",
+    "flappybird": "Flappy Bird.html",
+    "fnac1": "Five Nights at Candy's.html",
+    "fnac2": "Five Nights at Candy's 2.html",
+    "fnaf1": "Five Nights at Freddy's.html",
+    "fnaf2": "Five Nights at Freddy's 2.html",
+    "fnaf3": "Five Nights at Freddy's 3.html",
+    "fnaf4": "Five Nights at Freddy's 4.html",
+    "fnaf4halloween": "Five Nights at Freddy's 4_ Halloween.html",
+    "fnafsl": "Five Nights at Freddy's_ Sister Location.html",
+    "footballbros": "Football Bros.html",
+    "fruitninja": "Fruit Ninja.html",
+    "gag": "Growden.io.html",
+    "geometrydash": "Geometry Dash Lite (REMAKE).html",
+    "gettingoverit": "Getting Over It with Bennett Foddy.html",
+    "googlebaseball": "Google Baseball.html",
+    "granny1": "Granny.html",
+    "granny2": "Granny 2.html",
+    "granny3": "Granny 3.html",
+    "halflife": "Half Life.html",
+    "hillclimbracing": "Hill Climb Racing Lite.html",
+    "hollowknight": "Hollow Knight.html",
+    "ironlung": "Iron Lung.html",
+    "jellydrift": "Jelly Drift.html",
+    "jetpackjoyride": "Jetpack Joyride.html",
+    "johnnytrigger": "Johnny Trigger.html",
+    "kindergarten1": "Kindergarten.html",
+    "kindergarten2": "Kindergarten 2.html",
+    "kindergarten3": "Kindergarten 3.html",
+    "learntofly3": "Learn to Fly 3.html",
+    "melonplayground": "Melon Playground.html",
+    "motox3m": "Moto X3M.html",
+    "nazizombies": "Nazi Zombies_ Portable.html",
+    "omori": "OMORI.html",
+    "ovo": "OvO 2.html",
+    "papersplease": "Papers, Please.html",
+    "peggle": "Peggle.html",
+    "pixelgun": "Pixel Gun Survival.html",
+    "plantsvszombies1": "Plants vs Zombies.html",
+    "plantsvszombies2": "Plants vs. Zombies 2 Gardenless.html",
+    "pokemon": "Pokemon Red.html",
+    "raft": "Raft.html",
+    "ragdollarchers": "Ragdoll Archers.html",
+    "ragdollhit": "Ragdoll Hit.html",
+    "repo": "R.E.P.O.html",
+    "retrobowl": "Retro Bowl.html",
+    "retrobowlcollege": "Retro Bowl College.html",
+    "schoolboyrunaway": "Schoolboy Runaway.html",
+    "silksong": "Hollow Knight_ Silksong.html",
+    "slenderman": "Slender_ The 8 Pages.html",
+    "slimerancher": "Slime Rancher.html",
+    "slope": "Slope.html",
+    "smashkarts": "Smash Karts.html",
+    "snowrider3d": "Snow Rider 3D.html",
+    "soccerrandom": "Soccer Random.html",
+    "stardewvalley": "Stardew Valley.html",
+    "stealabrainrot": "Steal A Brainrot.html",
+    "stickmanhook": "Stickman Hook.html",
+    "supermario64": "Super Mario 64.html",
+    "ucn": "Five Nights at Freddy's_ Ultimate Custom Night.html"
+  };
+
   function renderCard(game) {
     const card = document.createElement("div");
     card.className = "game-card";
@@ -686,7 +776,7 @@
     document.getElementById("detail-desc").textContent = game.desc;
     document.getElementById("detail-storage").textContent = game.storage;
     document.getElementById("detail-date").textContent = game.date;
-    document.getElementById("detail-play").href = "games/" + game.id + ".html";
+    document.getElementById("detail-play").href = "games/" + encodeURIComponent(gameFileOverrides[game.id] || (game.id + ".html"));
     const img = document.getElementById("detail-img");
     img.style.display = "block";
     img.src = "thumbnails/" + game.id + ".png";
