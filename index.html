@@ -1310,6 +1310,7 @@
       grid.appendChild(renderCard(game));
     });
   }
+  function renderCard(game) {
     const card = document.createElement("div");
     card.className = "game-card";
     card.onclick = () => showDetail(game.id);
