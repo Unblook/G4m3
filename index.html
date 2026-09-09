@@ -382,6 +382,13 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    margin-bottom: 26px;
+  }
+
+  .auth-heading {
+    font-size: 16px;
+    font-weight: normal;
+    color: #999;
   }
 
   .auth-input {
@@ -625,14 +632,33 @@
 
       <div id="auth-logged-out">
         <div class="auth-box">
+          <h3 class="auth-heading">Sign in with Email</h3>
           <input type="email" id="auth-email" placeholder="Email" class="auth-input">
           <input type="password" id="auth-password" placeholder="Password" class="auth-input">
           <div class="auth-btn-row">
             <button class="play-btn" onclick="handleSignUp()">Sign Up</button>
             <button class="play-btn" onclick="handleSignIn()">Sign In</button>
           </div>
-          <p id="auth-error" class="auth-error"></p>
         </div>
+
+        <div class="auth-box">
+          <h3 class="auth-heading">Sign in with Username</h3>
+          <input type="text" id="auth-username" placeholder="Username" class="auth-input">
+          <input type="password" id="auth-username-password" placeholder="Password" class="auth-input">
+          <div class="auth-btn-row">
+            <button class="play-btn" onclick="handleUsernameSignUp()">Sign Up</button>
+            <button class="play-btn" onclick="handleUsernameSignIn()">Sign In</button>
+          </div>
+        </div>
+
+        <div class="auth-box">
+          <div class="auth-btn-row">
+            <button class="play-btn" onclick="handleGoogleSignIn()">Continue with Google</button>
+            <button class="play-btn" onclick="handleAnonymousSignIn()">Continue as Guest</button>
+          </div>
+        </div>
+
+        <p id="auth-error" class="auth-error"></p>
       </div>
 
       <div id="auth-logged-in" style="display:none;">
@@ -950,10 +976,11 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    signOut, onAuthStateChanged
+    signOut, onAuthStateChanged, setPersistence, browserLocalPersistence,
+    GoogleAuthProvider, signInWithPopup, signInAnonymously
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion
+    getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, deleteDoc, runTransaction
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
     getDatabase, ref, push, onValue, query as rtdbQuery, limitToLast,
@@ -977,10 +1004,12 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  setPersistence(auth, browserLocalPersistence);
   const db = getFirestore(app);
   const rtdb = getDatabase(app);
 
   let currentUser = null;
+  let currentLabel = null;
   let chatUnsub = null;
 
   function setAuthError(id, message) {
@@ -1015,6 +1044,91 @@
 
   window.handleSignOut = async function () {
     await signOut(auth);
+  };
+
+  const USERNAME_DOMAIN = "@g4m3.local";
+
+  window.handleUsernameSignUp = async function () {
+    setAuthError("auth-error", "");
+    const username = document.getElementById("auth-username").value.trim().toLowerCase();
+    const password = document.getElementById("auth-username-password").value;
+    if (!username || !password) {
+      setAuthError("auth-error", "Enter a username and password.");
+      return;
+    }
+    const syntheticEmail = username + USERNAME_DOMAIN;
+    const usernameRef = doc(db, "usernames", username);
+    try {
+      // Reserve the username atomically first, so two people can't grab the same one at once.
+      await runTransaction(db, async (tx) => {
+        const existing = await tx.get(usernameRef);
+        if (existing.exists()) {
+          throw new Error("That username is already taken.");
+        }
+        tx.set(usernameRef, { email: syntheticEmail, reservedAt: Date.now() });
+      });
+    } catch (err) {
+      setAuthError("auth-error", err.message);
+      return;
+    }
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, syntheticEmail, password);
+      await setDoc(doc(db, "users", cred.user.uid), { username: username, friends: [] });
+      await setDoc(usernameRef, { email: syntheticEmail, uid: cred.user.uid }, { merge: true });
+    } catch (err) {
+      // Roll back the reservation if account creation failed
+      await deleteDoc(usernameRef).catch(() => {});
+      setAuthError("auth-error", err.message);
+    }
+  };
+
+  window.handleUsernameSignIn = async function () {
+    setAuthError("auth-error", "");
+    const username = document.getElementById("auth-username").value.trim().toLowerCase();
+    const password = document.getElementById("auth-username-password").value;
+    if (!username || !password) {
+      setAuthError("auth-error", "Enter a username and password.");
+      return;
+    }
+    try {
+      const usernameSnap = await getDoc(doc(db, "usernames", username));
+      if (!usernameSnap.exists()) {
+        setAuthError("auth-error", "No account with that username.");
+        return;
+      }
+      await signInWithEmailAndPassword(auth, usernameSnap.data().email, password);
+    } catch (err) {
+      setAuthError("auth-error", err.message);
+    }
+  };
+
+  window.handleGoogleSignIn = async function () {
+    setAuthError("auth-error", "");
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const userRef = doc(db, "users", result.user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        await setDoc(userRef, { email: result.user.email, friends: [] });
+      }
+    } catch (err) {
+      setAuthError("auth-error", err.message);
+    }
+  };
+
+  window.handleAnonymousSignIn = async function () {
+    setAuthError("auth-error", "");
+    try {
+      const result = await signInAnonymously(auth);
+      const userRef = doc(db, "users", result.user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        await setDoc(userRef, { email: "Guest", friends: [] });
+      }
+    } catch (err) {
+      setAuthError("auth-error", err.message);
+    }
   };
 
   window.handleAddFriend = async function () {
@@ -1057,7 +1171,7 @@
     input.value = "";
     await push(ref(rtdb, "messages"), {
       text: text,
-      senderEmail: currentUser.email,
+      senderEmail: currentLabel || currentUser.email || "Guest",
       createdAt: rtdbServerTimestamp()
     });
   };
@@ -1079,8 +1193,9 @@
     });
   }
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     currentUser = user;
+    if (!user) currentLabel = null;
     const loggedOut = !!user ? "none" : "block";
     const loggedIn = !!user ? "block" : "none";
 
@@ -1092,7 +1207,17 @@
     document.getElementById("chat-logged-in").style.display = loggedIn;
 
     if (user) {
-      document.getElementById("profile-email").textContent = user.email;
+      let label = user.displayName || user.email;
+      if (user.isAnonymous) {
+        label = "Guest";
+      } else {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists() && snap.data().username) {
+          label = snap.data().username;
+        }
+      }
+      document.getElementById("profile-email").textContent = label;
+      currentLabel = label;
       loadFriends();
       startChatListener();
     }
