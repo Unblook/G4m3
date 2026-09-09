@@ -667,6 +667,73 @@
     flex-shrink: 0;
   }
 
+  .friends-layout {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .friends-main {
+    flex: 1;
+    min-width: 280px;
+  }
+
+  .all-accounts-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    border-left: 2px solid #ffffff22;
+    padding-left: 28px;
+  }
+
+  .all-accounts-sidebar .auth-heading {
+    margin-bottom: 14px;
+  }
+
+  .account-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+
+  .account-row span {
+    flex: 1;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .account-add-btn {
+    background: #fff;
+    color: #000;
+    font-family: inherit;
+    font-size: 12px;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: box-shadow 0.15s ease;
+  }
+
+  .account-add-btn:hover {
+    box-shadow: 0 0 8px 1px #fff;
+  }
+
+  .account-add-btn:disabled {
+    background: #333;
+    color: #777;
+    cursor: default;
+    box-shadow: none;
+  }
+
   /* ---------- Mobile responsiveness ---------- */
   @media (max-width: 700px) {
     .sidebar {
@@ -889,12 +956,20 @@
         <p class="profile-line">Sign in on the Profile page to add and see friends.</p>
       </div>
       <div id="friends-logged-in" style="display:none;">
-        <div class="auth-box">
-          <input type="text" id="friend-email" placeholder="Friend's email or username" class="auth-input">
-          <button class="play-btn" onclick="handleAddFriend()">Add Friend</button>
-          <p id="friend-error" class="auth-error"></p>
+        <div class="friends-layout">
+          <div class="friends-main">
+            <div class="auth-box">
+              <input type="text" id="friend-email" placeholder="Friend's email or username" class="auth-input">
+              <button class="play-btn" onclick="handleAddFriend()">Add Friend</button>
+              <p id="friend-error" class="auth-error"></p>
+            </div>
+            <div id="friends-list" class="friends-list"></div>
+          </div>
+          <div class="all-accounts-sidebar">
+            <h3 class="auth-heading">All Players</h3>
+            <div id="all-accounts-list" class="friends-list"></div>
+          </div>
         </div>
-        <div id="friends-list" class="friends-list"></div>
       </div>
     </section>
 
@@ -1153,6 +1228,10 @@
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     const navBtn = document.querySelector(`.nav-btn[data-view="${view}"]`);
     if (navBtn) navBtn.classList.add("active");
+    if (view === "friends" && window.__g4m3SignedIn && typeof window.loadAllAccounts === "function") {
+      window.loadAllAccounts();
+      window.loadFriends();
+    }
   }
 
   function showDetail(id) {
@@ -1195,7 +1274,8 @@
     GoogleAuthProvider, signInWithPopup, signInAnonymously
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, deleteDoc, runTransaction
+    getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, deleteDoc, runTransaction,
+    collection, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
     getDatabase, ref, push, onValue, query as rtdbQuery, limitToLast,
@@ -1492,6 +1572,48 @@
     }
   }
 
+  window.addFriendByUid = async function (friendUid, btn) {
+    if (!currentUser || friendUid === currentUser.uid) return;
+    btn.disabled = true;
+    btn.textContent = "Added";
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        friends: arrayUnion(friendUid)
+      });
+      loadFriends();
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = "Add";
+      console.error(err);
+    }
+  };
+
+  async function loadAllAccounts() {
+    if (!currentUser) return;
+    const list = document.getElementById("all-accounts-list");
+    list.innerHTML = "";
+    const mySnap = await getDoc(doc(db, "users", currentUser.uid));
+    const myFriends = (mySnap.exists() && mySnap.data().friends) || [];
+    const querySnap = await getDocs(collection(db, "users"));
+    querySnap.forEach(docSnap => {
+      const uid = docSnap.id;
+      const data = docSnap.data();
+      if (uid === currentUser.uid || !data.username) return;
+      const row = document.createElement("div");
+      row.className = "account-row";
+      const avatarHtml = data.photo
+        ? `<img class="avatar-small" src="${data.photo}" alt="">`
+        : `<div class="avatar-small-fallback">?</div>`;
+      const alreadyFriend = myFriends.includes(uid);
+      row.innerHTML = `
+        ${avatarHtml}
+        <span onclick="showUserProfile('${uid}')">${data.username}</span>
+        <button class="account-add-btn" ${alreadyFriend ? "disabled" : ""} onclick="addFriendByUid('${uid}', this)">${alreadyFriend ? "Added" : "Add"}</button>
+      `;
+      list.appendChild(row);
+    });
+  }
+
   window.handleSendMessage = async function () {
     const input = document.getElementById("chat-input");
     const text = input.value.trim();
@@ -1565,8 +1687,12 @@
     });
   }
 
+  window.loadFriends = loadFriends;
+  window.loadAllAccounts = loadAllAccounts;
+
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
+    window.__g4m3SignedIn = !!user;
     if (!user) currentLabel = null;
     const loggedOut = !!user ? "none" : "block";
     const loggedIn = !!user ? "block" : "none";
@@ -1601,6 +1727,7 @@
       applyAvatar(document.getElementById("profile-pic"), document.getElementById("profile-pic-fallback"), photo);
       currentLabel = label;
       loadFriends();
+      loadAllAccounts();
       startChatListener();
     }
   });
