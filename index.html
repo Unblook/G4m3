@@ -800,6 +800,7 @@
     <button class="nav-btn active" data-view="home" onclick="showView('home')">Home</button>
     <button class="nav-btn" data-view="games" onclick="showView('games')">Games</button>
     <button class="nav-btn" data-view="youtube" onclick="showView('youtube')">Unblocked Youtube</button>
+    <button class="nav-btn" data-view="movies" onclick="showView('movies')">Movies</button>
     <button class="nav-btn" data-view="profile" onclick="showView('profile')">Profile</button>
     <button class="nav-btn" data-view="friends" onclick="showView('friends')">Friends</button>
     <button class="nav-btn" data-view="chat" onclick="showView('chat')">Chat</button>
@@ -913,6 +914,11 @@
       </div>
     </section>
 
+    <!-- MOVIES VIEW -->
+    <section id="view-movies" class="view">
+      <h1 class="hero-title">Movies</h1>
+    </section>
+
     <!-- PROFILE VIEW -->
     <section id="view-profile" class="view">
       <h1 class="hero-title">Profile</h1>
@@ -966,7 +972,7 @@
             <div id="friends-list" class="friends-list"></div>
           </div>
           <div class="all-accounts-sidebar">
-            <h3 class="auth-heading">All Players</h3>
+            <h3 class="auth-heading">All Users</h3>
             <div id="all-accounts-list" class="friends-list"></div>
           </div>
         </div>
@@ -977,7 +983,7 @@
     <section id="view-chat" class="view">
       <h1 class="hero-title">Chat</h1>
       <div id="chat-logged-out">
-        <p class="profile-line">Sign in on the Profile page to be able to chat.</p>
+        <p class="profile-line">Sign in on the Profile page to join the chat.</p>
       </div>
       <div id="chat-logged-in" style="display:none;">
         <div id="chat-messages" class="chat-messages"></div>
