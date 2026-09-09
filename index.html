@@ -516,7 +516,9 @@
   }
 
   .auth-modal-logo {
-    font-size: 40px;
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 1px;
     margin-bottom: 8px;
   }
 
@@ -658,7 +660,7 @@
   <div id="auth-modal-overlay" class="auth-modal-overlay">
     <div class="auth-modal">
       <button class="auth-modal-close" onclick="closeAuthModal()">&times;</button>
-      <div class="auth-modal-logo">&#127918;</div>
+      <div class="auth-modal-logo">G4m3</div>
       <h2 class="auth-modal-title" id="auth-modal-title">Sign in to Games</h2>
 
       <div id="auth-modal-form">
@@ -786,7 +788,7 @@
       </div>
       <div id="friends-logged-in" style="display:none;">
         <div class="auth-box">
-          <input type="email" id="friend-email" placeholder="Friend's email" class="auth-input">
+          <input type="text" id="friend-email" placeholder="Friend's email or username" class="auth-input">
           <button class="play-btn" onclick="handleAddFriend()">Add Friend</button>
           <p id="friend-error" class="auth-error"></p>
         </div>
