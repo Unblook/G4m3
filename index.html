@@ -376,6 +376,96 @@
     display: block;
   }
 
+  /* ---------- Auth / Profile / Friends / Chat ---------- */
+  .auth-box {
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .auth-input {
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 6px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 10px 14px;
+    outline: none;
+  }
+
+  .auth-input:focus {
+    border-color: #fff;
+  }
+
+  .auth-btn-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .auth-error {
+    color: #ff6b6b;
+    font-size: 14px;
+    min-height: 18px;
+  }
+
+  .profile-line {
+    font-size: 17px;
+    color: #ccc;
+    margin-bottom: 20px;
+  }
+
+  .friends-list {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+  }
+
+  .friend-item {
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 15px;
+  }
+
+  .chat-messages {
+    max-width: 600px;
+    height: 400px;
+    overflow-y: auto;
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .chat-message {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .chat-message .sender {
+    color: #999;
+    font-size: 12px;
+  }
+
+  .chat-input-row {
+    display: flex;
+    gap: 12px;
+    max-width: 600px;
+  }
+
+  .chat-input-row .auth-input {
+    flex: 1;
+  }
+
   /* ---------- Mobile responsiveness ---------- */
   @media (max-width: 700px) {
     .sidebar {
@@ -442,6 +532,9 @@
     <button class="nav-btn active" data-view="home" onclick="showView('home')">Home</button>
     <button class="nav-btn" data-view="games" onclick="showView('games')">Games</button>
     <button class="nav-btn" data-view="youtube" onclick="showView('youtube')">Unblocked Youtube</button>
+    <button class="nav-btn" data-view="profile" onclick="showView('profile')">Profile</button>
+    <button class="nav-btn" data-view="friends" onclick="showView('friends')">Friends</button>
+    <button class="nav-btn" data-view="chat" onclick="showView('chat')">Chat</button>
   </div>
 
   <div class="main">
@@ -522,6 +615,59 @@
         <div class="yt-step">
           <p class="yt-caption">Once you go to YouTube in the new page you'll be able to watch stuff unblocked</p>
           <img src="thumbnails/yt8.png" alt="Youtube screenshot 8">
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFILE VIEW -->
+    <section id="view-profile" class="view">
+      <h1 class="hero-title">Profile</h1>
+
+      <div id="auth-logged-out">
+        <div class="auth-box">
+          <input type="email" id="auth-email" placeholder="Email" class="auth-input">
+          <input type="password" id="auth-password" placeholder="Password" class="auth-input">
+          <div class="auth-btn-row">
+            <button class="play-btn" onclick="handleSignUp()">Sign Up</button>
+            <button class="play-btn" onclick="handleSignIn()">Sign In</button>
+          </div>
+          <p id="auth-error" class="auth-error"></p>
+        </div>
+      </div>
+
+      <div id="auth-logged-in" style="display:none;">
+        <p class="profile-line">Signed in as <span id="profile-email"></span></p>
+        <button class="detail-back" onclick="handleSignOut()">Sign Out</button>
+      </div>
+    </section>
+
+    <!-- FRIENDS VIEW -->
+    <section id="view-friends" class="view">
+      <h1 class="hero-title">Friends</h1>
+      <div id="friends-logged-out">
+        <p class="profile-line">Sign in on the Profile page to add and see friends.</p>
+      </div>
+      <div id="friends-logged-in" style="display:none;">
+        <div class="auth-box">
+          <input type="email" id="friend-email" placeholder="Friend's email" class="auth-input">
+          <button class="play-btn" onclick="handleAddFriend()">Add Friend</button>
+          <p id="friend-error" class="auth-error"></p>
+        </div>
+        <div id="friends-list" class="friends-list"></div>
+      </div>
+    </section>
+
+    <!-- CHAT VIEW -->
+    <section id="view-chat" class="view">
+      <h1 class="hero-title">Chat</h1>
+      <div id="chat-logged-out">
+        <p class="profile-line">Sign in on the Profile page to join the chat.</p>
+      </div>
+      <div id="chat-logged-in" style="display:none;">
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Type a message..." class="auth-input" onkeydown="if(event.key==='Enter') handleSendMessage();">
+          <button class="play-btn" onclick="handleSendMessage()">Send</button>
         </div>
       </div>
     </section>
@@ -797,6 +943,160 @@
   });
 
   renderGrids();
+</script>
+
+<!-- ===================== FIREBASE ===================== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import {
+    getDatabase, ref, push, onValue, query as rtdbQuery, limitToLast,
+    serverTimestamp as rtdbServerTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  // ---- REPLACE THIS with the firebaseConfig object from your Firebase console ----
+  // NOTE: databaseURL is required for Realtime Database (Chat). You'll find it on the
+  // Realtime Database page in the console once you create it, e.g.
+  // "https://YOUR_PROJECT-default-rtdb.firebaseio.com"
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+  // ----------------------------------------------------------------------------
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const rtdb = getDatabase(app);
+
+  let currentUser = null;
+  let chatUnsub = null;
+
+  function setAuthError(id, message) {
+    document.getElementById(id).textContent = message || "";
+  }
+
+  window.handleSignUp = async function () {
+    setAuthError("auth-error", "");
+    const email = document.getElementById("auth-email").value.trim();
+    const password = document.getElementById("auth-password").value;
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", cred.user.uid), {
+        email: email,
+        friends: []
+      });
+    } catch (err) {
+      setAuthError("auth-error", err.message);
+    }
+  };
+
+  window.handleSignIn = async function () {
+    setAuthError("auth-error", "");
+    const email = document.getElementById("auth-email").value.trim();
+    const password = document.getElementById("auth-password").value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      setAuthError("auth-error", err.message);
+    }
+  };
+
+  window.handleSignOut = async function () {
+    await signOut(auth);
+  };
+
+  window.handleAddFriend = async function () {
+    setAuthError("friend-error", "");
+    const friendEmail = document.getElementById("friend-email").value.trim();
+    if (!currentUser || !friendEmail) return;
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        friends: arrayUnion(friendEmail)
+      });
+      document.getElementById("friend-email").value = "";
+      loadFriends();
+    } catch (err) {
+      setAuthError("friend-error", err.message);
+    }
+  };
+
+  async function loadFriends() {
+    if (!currentUser) return;
+    const snap = await getDoc(doc(db, "users", currentUser.uid));
+    const list = document.getElementById("friends-list");
+    list.innerHTML = "";
+    const friends = (snap.exists() && snap.data().friends) || [];
+    if (friends.length === 0) {
+      list.innerHTML = '<p class="profile-line">No friends added yet.</p>';
+      return;
+    }
+    friends.forEach(f => {
+      const item = document.createElement("div");
+      item.className = "friend-item";
+      item.textContent = f;
+      list.appendChild(item);
+    });
+  }
+
+  window.handleSendMessage = async function () {
+    const input = document.getElementById("chat-input");
+    const text = input.value.trim();
+    if (!currentUser || !text) return;
+    input.value = "";
+    await push(ref(rtdb, "messages"), {
+      text: text,
+      senderEmail: currentUser.email,
+      createdAt: rtdbServerTimestamp()
+    });
+  };
+
+  function startChatListener() {
+    if (chatUnsub) return;
+    const messagesQuery = rtdbQuery(ref(rtdb, "messages"), limitToLast(50));
+    chatUnsub = onValue(messagesQuery, (snap) => {
+      const box = document.getElementById("chat-messages");
+      box.innerHTML = "";
+      const data = snap.val() || {};
+      Object.values(data).forEach(m => {
+        const row = document.createElement("div");
+        row.className = "chat-message";
+        row.innerHTML = `<span class="sender">${m.senderEmail || "unknown"}</span><br>${m.text}`;
+        box.appendChild(row);
+      });
+      box.scrollTop = box.scrollHeight;
+    });
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    const loggedOut = !!user ? "none" : "block";
+    const loggedIn = !!user ? "block" : "none";
+
+    document.getElementById("auth-logged-out").style.display = loggedOut;
+    document.getElementById("auth-logged-in").style.display = loggedIn;
+    document.getElementById("friends-logged-out").style.display = loggedOut;
+    document.getElementById("friends-logged-in").style.display = loggedIn;
+    document.getElementById("chat-logged-out").style.display = loggedOut;
+    document.getElementById("chat-logged-in").style.display = loggedIn;
+
+    if (user) {
+      document.getElementById("profile-email").textContent = user.email;
+      loadFriends();
+      startChatListener();
+    }
+  });
 </script>
 
 </body>
