@@ -586,6 +586,87 @@
     cursor: pointer;
   }
 
+  /* ---------- Profile picture / bio ---------- */
+  .profile-pic-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .profile-pic {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff33;
+  }
+
+  .profile-pic-fallback {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    border: 2px solid #ffffff33;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #666;
+  }
+
+  .profile-pic-large,
+  .profile-pic-fallback-large {
+    width: 110px;
+    height: 110px;
+    font-size: 40px;
+    margin: 0 auto 16px auto;
+  }
+
+  .profile-bio-input {
+    resize: vertical;
+    min-height: 70px;
+    font-family: inherit;
+  }
+
+  .profile-bio-display {
+    color: #bbb;
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 300px;
+  }
+
+  .avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+
+  .avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff33;
+    flex-shrink: 0;
+  }
+
+  .avatar-small-fallback {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    border: 2px solid #ffffff33;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #666;
+    flex-shrink: 0;
+  }
+
   /* ---------- Mobile responsiveness ---------- */
   @media (max-width: 700px) {
     .sidebar {
@@ -687,7 +768,7 @@
 
     <!-- HOME VIEW -->
     <section id="view-home" class="view active">
-      <h1 class="hero-title">Games</h1>
+      <h1 class="hero-title">G4m3</h1>
     </section>
 
     <!-- GAMES VIEW -->
@@ -775,10 +856,31 @@
       </div>
 
       <div id="auth-logged-in" style="display:none;">
+        <div class="profile-pic-wrap">
+          <img id="profile-pic" class="profile-pic" src="" alt="Profile picture" style="display:none;">
+          <div id="profile-pic-fallback" class="profile-pic-fallback">?</div>
+          <input type="file" id="profile-pic-input" accept="image/*" style="display:none;" onchange="handleProfilePicChange(event)">
+          <button class="detail-back" onclick="document.getElementById('profile-pic-input').click()">Change Photo</button>
+        </div>
         <p class="profile-line">Signed in as <span id="profile-email"></span></p>
+        <div class="auth-box">
+          <textarea id="profile-bio-input" class="auth-input profile-bio-input" placeholder="Write a short bio..."></textarea>
+          <button class="play-btn" onclick="handleSaveBio()">Save Bio</button>
+        </div>
         <button class="detail-back" onclick="handleSignOut()">Sign Out</button>
       </div>
     </section>
+
+    <!-- VIEW PROFILE MODAL -->
+    <div id="view-profile-overlay" class="auth-modal-overlay">
+      <div class="auth-modal">
+        <button class="auth-modal-close" onclick="closeViewProfile()">&times;</button>
+        <img id="view-profile-pic" class="profile-pic profile-pic-large" src="" alt="Profile picture" style="display:none;">
+        <div id="view-profile-pic-fallback" class="profile-pic-fallback profile-pic-fallback-large">?</div>
+        <h2 class="auth-modal-title" id="view-profile-username"></h2>
+        <p id="view-profile-bio" class="profile-bio-display"></p>
+      </div>
+    </div>
 
     <!-- FRIENDS VIEW -->
     <section id="view-friends" class="view">
@@ -1138,6 +1240,7 @@
   async function performEmailSignUp(email, password) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await setDoc(doc(db, "users", cred.user.uid), { email: email, friends: [] });
+    await setDoc(doc(db, "emailIndex", email.toLowerCase()), { uid: cred.user.uid });
   }
 
   async function performEmailSignIn(email, password) {
@@ -1172,6 +1275,77 @@
     await signInWithEmailAndPassword(auth, usernameSnap.data().email, password);
   }
 
+  // ---- Profile picture / bio ----
+  function resizeImageToBase64(file, maxSize) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > h) { h = Math.round(h * (maxSize / w)); w = maxSize; }
+          else { w = Math.round(w * (maxSize / h)); h = maxSize; }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  window.handleProfilePicChange = async function (event) {
+    const file = event.target.files[0];
+    if (!file || !currentUser) return;
+    try {
+      const dataUrl = await resizeImageToBase64(file, 150);
+      await setDoc(doc(db, "users", currentUser.uid), { photo: dataUrl }, { merge: true });
+      applyAvatar(document.getElementById("profile-pic"), document.getElementById("profile-pic-fallback"), dataUrl);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  window.handleSaveBio = async function () {
+    if (!currentUser) return;
+    const bio = document.getElementById("profile-bio-input").value.trim();
+    await setDoc(doc(db, "users", currentUser.uid), { bio: bio }, { merge: true });
+  };
+
+  function applyAvatar(imgEl, fallbackEl, dataUrl) {
+    if (dataUrl) {
+      imgEl.src = dataUrl;
+      imgEl.style.display = "block";
+      fallbackEl.style.display = "none";
+    } else {
+      imgEl.style.display = "none";
+      fallbackEl.style.display = "flex";
+    }
+  }
+
+  window.closeViewProfile = function () {
+    document.getElementById("view-profile-overlay").classList.remove("show");
+  };
+
+  window.showUserProfile = async function (uid) {
+    if (!uid) return;
+    const snap = await getDoc(doc(db, "users", uid));
+    const data = snap.exists() ? snap.data() : {};
+    document.getElementById("view-profile-username").textContent = data.username || data.email || "Guest";
+    document.getElementById("view-profile-bio").textContent = data.bio || "No bio yet.";
+    applyAvatar(
+      document.getElementById("view-profile-pic"),
+      document.getElementById("view-profile-pic-fallback"),
+      data.photo || null
+    );
+    document.getElementById("view-profile-overlay").classList.add("show");
+  };
+
   window.handleGoogleSignIn = async function () {
     setAuthError("auth-modal-error", "");
     try {
@@ -1181,6 +1355,9 @@
       const snap = await getDoc(userRef);
       if (!snap.exists()) {
         await setDoc(userRef, { email: result.user.email, friends: [] });
+      }
+      if (result.user.email) {
+        await setDoc(doc(db, "emailIndex", result.user.email.toLowerCase()), { uid: result.user.uid });
       }
     } catch (err) {
       setAuthError("auth-modal-error", err.message);
@@ -1262,11 +1439,27 @@
 
   window.handleAddFriend = async function () {
     setAuthError("friend-error", "");
-    const friendEmail = document.getElementById("friend-email").value.trim();
-    if (!currentUser || !friendEmail) return;
+    const identifier = document.getElementById("friend-email").value.trim();
+    if (!currentUser || !identifier) return;
     try {
+      let friendUid = null;
+      if (identifier.includes("@")) {
+        const idxSnap = await getDoc(doc(db, "emailIndex", identifier.toLowerCase()));
+        if (idxSnap.exists()) friendUid = idxSnap.data().uid;
+      } else {
+        const unameSnap = await getDoc(doc(db, "usernames", identifier.toLowerCase()));
+        if (unameSnap.exists()) friendUid = unameSnap.data().uid;
+      }
+      if (!friendUid) {
+        setAuthError("friend-error", "No account found with that email or username.");
+        return;
+      }
+      if (friendUid === currentUser.uid) {
+        setAuthError("friend-error", "That's you!");
+        return;
+      }
       await updateDoc(doc(db, "users", currentUser.uid), {
-        friends: arrayUnion(friendEmail)
+        friends: arrayUnion(friendUid)
       });
       document.getElementById("friend-email").value = "";
       loadFriends();
@@ -1285,12 +1478,18 @@
       list.innerHTML = '<p class="profile-line">No friends added yet.</p>';
       return;
     }
-    friends.forEach(f => {
+    for (const friendUid of friends) {
+      const friendSnap = await getDoc(doc(db, "users", friendUid));
+      const data = friendSnap.exists() ? friendSnap.data() : {};
       const item = document.createElement("div");
-      item.className = "friend-item";
-      item.textContent = f;
+      item.className = "friend-item avatar-row";
+      item.onclick = () => showUserProfile(friendUid);
+      const avatarHtml = data.photo
+        ? `<img class="avatar-small" src="${data.photo}" alt="">`
+        : `<div class="avatar-small-fallback">?</div>`;
+      item.innerHTML = `${avatarHtml}<span>${data.username || data.email || "Guest"}</span>`;
       list.appendChild(item);
-    });
+    }
   }
 
   window.handleSendMessage = async function () {
@@ -1301,9 +1500,22 @@
     await push(ref(rtdb, "messages"), {
       text: text,
       senderEmail: currentLabel || currentUser.email || "Guest",
+      senderUid: currentUser.uid,
       createdAt: rtdbServerTimestamp()
     });
   };
+
+  const avatarCache = {};
+  async function getCachedAvatar(uid) {
+    if (uid in avatarCache) return avatarCache[uid];
+    try {
+      const snap = await getDoc(doc(db, "users", uid));
+      avatarCache[uid] = snap.exists() ? (snap.data().photo || null) : null;
+    } catch (e) {
+      avatarCache[uid] = null;
+    }
+    return avatarCache[uid];
+  }
 
   function startChatListener() {
     if (chatUnsub) return;
@@ -1315,8 +1527,39 @@
       Object.values(data).forEach(m => {
         const row = document.createElement("div");
         row.className = "chat-message";
-        row.innerHTML = `<span class="sender">${m.senderEmail || "unknown"}</span><br>${m.text}`;
+
+        const header = document.createElement("div");
+        header.className = "avatar-row";
+        header.style.cursor = m.senderUid ? "pointer" : "default";
+        if (m.senderUid) header.onclick = () => showUserProfile(m.senderUid);
+
+        const fallback = document.createElement("div");
+        fallback.className = "avatar-small-fallback";
+        fallback.textContent = "?";
+        header.appendChild(fallback);
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "sender";
+        nameSpan.textContent = m.senderEmail || "unknown";
+        header.appendChild(nameSpan);
+
+        row.appendChild(header);
+
+        const textDiv = document.createElement("div");
+        textDiv.textContent = m.text;
+        row.appendChild(textDiv);
+
         box.appendChild(row);
+
+        if (m.senderUid) {
+          getCachedAvatar(m.senderUid).then(photo => {
+            if (!photo) return;
+            const img = document.createElement("img");
+            img.className = "avatar-small";
+            img.src = photo;
+            header.replaceChild(img, fallback);
+          });
+        }
       });
       box.scrollTop = box.scrollHeight;
     });
@@ -1343,15 +1586,19 @@
 
     if (user) {
       let label = user.displayName || user.email;
-      if (user.isAnonymous) {
-        label = "Guest";
-      } else {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists() && snap.data().username) {
-          label = snap.data().username;
-        }
+      let bio = "";
+      let photo = null;
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists()) {
+        const d = snap.data();
+        if (d.username && !user.isAnonymous) label = d.username;
+        bio = d.bio || "";
+        photo = d.photo || null;
       }
+      if (user.isAnonymous) label = "Guest";
       document.getElementById("profile-email").textContent = label;
+      document.getElementById("profile-bio-input").value = bio;
+      applyAvatar(document.getElementById("profile-pic"), document.getElementById("profile-pic-fallback"), photo);
       currentLabel = label;
       loadFriends();
       startChatListener();
