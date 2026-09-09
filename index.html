@@ -78,6 +78,51 @@
     margin-bottom: 40px;
   }
 
+  h2.section-title {
+    font-size: 24px;
+    font-weight: normal;
+    margin-bottom: 20px;
+  }
+
+  .home-update-heading {
+    margin-top: 44px;
+  }
+
+  #recent-grid {
+    margin-bottom: 10px;
+  }
+
+  .recent-empty {
+    color: #888;
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+
+  .update-log {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 700px;
+  }
+
+  .update-entry {
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+
+  .update-entry .update-date {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .update-entry .update-text {
+    font-size: 15px;
+    color: #eee;
+  }
+
   .games-label {
     position: absolute;
     top: 14px;
@@ -837,6 +882,12 @@
     <!-- HOME VIEW -->
     <section id="view-home" class="view active">
       <h1 class="hero-title">G4m3</h1>
+
+      <h2 class="section-title">Recently Played</h2>
+      <div class="game-grid" id="recent-grid"></div>
+
+      <h2 class="section-title home-update-heading">Update Log</h2>
+      <div id="update-log" class="update-log"></div>
     </section>
 
     <!-- GAMES VIEW -->
@@ -1206,7 +1257,59 @@
     "ucn": "Five Nights at Freddy's_ Ultimate Custom Night.html"
   };
 
-  function renderCard(game) {
+  const updateLog = [
+    { date: "Sep 9, 2026", text: "Added a Movies page and renamed the Friends sidebar to \"All Users\"." },
+    { date: "Sep 9, 2026", text: "Added profile pictures, bios, and clickable profiles in Chat and Friends." },
+    { date: "Sep 9, 2026", text: "Added a sign-in popup with Email, Username, Google, and Guest options." },
+    { date: "Sep 9, 2026", text: "Added Profile, Friends, and Chat with real accounts (Firebase)." },
+    { date: "Sep 9, 2026", text: "Added an Unblocked Youtube page with step-by-step instructions." }
+  ];
+  // Add new entries to the TOP of the list above as you make updates.
+
+  function renderUpdateLog() {
+    const box = document.getElementById("update-log");
+    box.innerHTML = "";
+    updateLog.forEach(entry => {
+      const item = document.createElement("div");
+      item.className = "update-entry";
+      item.innerHTML = `<div class="update-date">${entry.date}</div><div class="update-text">${entry.text}</div>`;
+      box.appendChild(item);
+    });
+  }
+
+  const RECENT_KEY = "g4m3_recent_games";
+
+  function recordRecentPlay(id) {
+    let recent = [];
+    try {
+      recent = JSON.parse(localStorage.getItem(RECENT_KEY)) || [];
+    } catch (e) {
+      recent = [];
+    }
+    recent = recent.filter(rid => rid !== id);
+    recent.unshift(id);
+    recent = recent.slice(0, 5);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+  }
+
+  function renderRecentGrid() {
+    const grid = document.getElementById("recent-grid");
+    let recent = [];
+    try {
+      recent = JSON.parse(localStorage.getItem(RECENT_KEY)) || [];
+    } catch (e) {
+      recent = [];
+    }
+    const recentGames = recent.map(id => games.find(g => g.id === id)).filter(Boolean);
+    grid.innerHTML = "";
+    if (recentGames.length === 0) {
+      grid.innerHTML = '<p class="recent-empty">No games played yet — check out the Games page!</p>';
+      return;
+    }
+    recentGames.forEach(game => {
+      grid.appendChild(renderCard(game));
+    });
+  }
     const card = document.createElement("div");
     card.className = "game-card";
     card.onclick = () => showDetail(game.id);
@@ -1234,6 +1337,9 @@
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     const navBtn = document.querySelector(`.nav-btn[data-view="${view}"]`);
     if (navBtn) navBtn.classList.add("active");
+    if (view === "home") {
+      renderRecentGrid();
+    }
     if (view === "friends" && window.__g4m3SignedIn && typeof window.loadAllAccounts === "function") {
       window.loadAllAccounts();
       window.loadFriends();
@@ -1248,6 +1354,7 @@
     document.getElementById("detail-storage").textContent = game.storage;
     document.getElementById("detail-date").textContent = game.date;
     document.getElementById("detail-play").href = "games/" + encodeURIComponent(gameFileOverrides[game.id] || (game.id + ".html"));
+    document.getElementById("detail-play").onclick = () => recordRecentPlay(game.id);
     const img = document.getElementById("detail-img");
     img.style.display = "block";
     img.src = "thumbnails/" + game.id + ".png";
@@ -1269,6 +1376,8 @@
   });
 
   renderGrids();
+  renderUpdateLog();
+  renderRecentGrid();
 </script>
 
 <!-- ===================== FIREBASE ===================== -->
