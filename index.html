@@ -346,14 +346,30 @@
   }
 
   /* ---------- Unblocked Youtube view ---------- */
-  .yt-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 24px;
-    max-width: 1000px;
+  .yt-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 700px;
   }
 
-  .yt-grid img {
+  .yt-step {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .yt-caption {
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 17px;
+    line-height: 1.4;
+    color: #fff;
+  }
+
+  .yt-step img {
     width: 100%;
     border-radius: 8px;
     border: 2px solid #ffffff33;
@@ -474,15 +490,39 @@
     <section id="view-youtube" class="view">
       <h1 class="hero-title">Unblocked Youtube</h1>
       <a href="https://youtube.com" target="_blank" class="play-btn" style="margin-bottom: 30px; display: inline-block;">Youtube</a>
-      <div class="yt-grid">
-        <img src="thumbnails/yt1.png" alt="Youtube screenshot 1">
-        <img src="thumbnails/yt2.png" alt="Youtube screenshot 2">
-        <img src="thumbnails/yt3.png" alt="Youtube screenshot 3">
-        <img src="thumbnails/yt4.png" alt="Youtube screenshot 4">
-        <img src="thumbnails/yt5.png" alt="Youtube screenshot 5">
-        <img src="thumbnails/yt6.png" alt="Youtube screenshot 6">
-        <img src="thumbnails/yt7.png" alt="Youtube screenshot 7">
-        <img src="thumbnails/yt8.png" alt="Youtube screenshot 8">
+      <div class="yt-steps">
+        <div class="yt-step">
+          <p class="yt-caption">Here's the steps to use unblocked YouTube click the button to go to YouTube</p>
+          <img src="thumbnails/yt1.png" alt="Youtube screenshot 1">
+        </div>
+        <div class="yt-step">
+          <p class="yt-caption">Once your on YouTube click this button in the top left</p>
+          <img src="thumbnails/yt2.png" alt="Youtube screenshot 2">
+        </div>
+        <div class="yt-step">
+          <p class="yt-caption">Click this button as well</p>
+          <img src="thumbnails/yt3.png" alt="Youtube screenshot 3">
+        </div>
+        <div class="yt-step">
+          <p class="yt-caption">Click this button</p>
+          <img src="thumbnails/yt4.png" alt="Youtube screenshot 4">
+        </div>
+        <div class="yt-step">
+          <p class="yt-caption">Click the trash can on each one it doesn't matter if there's 1 or even 3 of them then click Done</p>
+          <img src="thumbnails/yt5.png" alt="Youtube screenshot 5">
+        </div>
+        <div class="yt-step">
+          <p class="yt-caption">Then it'll show this and click Reload</p>
+          <img src="thumbnails/yt6.png" alt="Youtube screenshot 6">
+        </div>
+        <div class="yt-step">
+          <p class="yt-caption">Open a new tab so click the plus sign at the top and search up youtube.com in a new tab</p>
+          <img src="thumbnails/yt7.png" alt="Youtube screenshot 7">
+        </div>
+        <div class="yt-step">
+          <p class="yt-caption">Once you go to YouTube in the new page you'll be able to watch stuff unblocked</p>
+          <img src="thumbnails/yt8.png" alt="Youtube screenshot 8">
+        </div>
       </div>
     </section>
 
