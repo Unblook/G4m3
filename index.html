@@ -232,47 +232,30 @@
     gap: 32px;
     overflow-x: auto;
     scroll-behavior: smooth;
-    padding: 6px 4px 12px 4px;
+    padding: 6px 4px 20px 4px;
     flex: 1;
     min-width: 0;
-    scrollbar-width: none;
+    scrollbar-color: #ffffff99 #111;
+    scrollbar-width: auto;
   }
 
   .carousel-track::-webkit-scrollbar {
-    display: none;
+    height: 18px;
   }
 
-  .carousel-scrollbar-track {
-    height: 20px;
+  .carousel-track::-webkit-scrollbar-track {
     background: #111;
-    border: 2px solid #ffffff33;
-    border-radius: 10px;
-    margin-top: 10px;
-    position: relative;
-    max-width: 100%;
-    cursor: pointer;
+    border-radius: 9px;
   }
 
-  .carousel-scrollbar-thumb {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    height: 12px;
+  .carousel-track::-webkit-scrollbar-thumb {
+    background: #ffffff99;
+    border-radius: 9px;
+    border: 3px solid #111;
+  }
+
+  .carousel-track::-webkit-scrollbar-thumb:hover {
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 8px 1px #ffffff88;
-    transition: box-shadow 0.15s ease;
-    cursor: grab;
-    touch-action: none;
-  }
-
-  .carousel-scrollbar-thumb.dragging {
-    cursor: grabbing;
-    box-shadow: 0 0 14px 3px #fff;
-  }
-
-  .carousel-scrollbar-track:hover .carousel-scrollbar-thumb {
-    box-shadow: 0 0 12px 2px #fff;
   }
 
   .settings-radio {
@@ -427,41 +410,30 @@
   }
 
   .game-embed-wrap {
-    margin-top: 30px;
-    max-width: 1000px;
-    position: relative;
-  }
-
-  .embed-home-btn,
-  .embed-fullscreen-btn {
-    position: absolute;
-    top: 22px;
-    z-index: 50;
-    opacity: 0.85;
-  }
-
-  .embed-home-btn {
-    left: 10px;
-  }
-
-  .embed-fullscreen-btn {
-    left: 130px;
-  }
-
-  .embed-home-btn:hover,
-  .embed-fullscreen-btn:hover {
-    opacity: 1;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: #000;
   }
 
   .game-embed-frame {
     width: 100%;
-    height: 70vh;
-    min-height: 400px;
-    border: 2px solid #ffffff33;
-    border-radius: 10px;
+    height: 100%;
+    border: none;
     background: #000;
     display: block;
-    margin-top: 12px;
+  }
+
+  .embed-home-btn {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    z-index: 2001;
+    opacity: 0.85;
+  }
+
+  .embed-home-btn:hover {
+    opacity: 1;
   }
 
   .detail-home-btn {
@@ -938,7 +910,6 @@
   body.light-mode .yt-caption,
   body.light-mode .friend-item,
   body.light-mode .account-row,
-  body.light-mode .carousel-scrollbar-track,
   body.light-mode .carousel-arrow,
   body.light-mode .detail-back,
   body.light-mode .detail-home-btn,
@@ -1046,6 +1017,7 @@
     <button class="nav-btn" data-view="youtube" onclick="showView('youtube')">Unblocked Youtube</button>
     <button class="nav-btn" data-view="movies" onclick="showView('movies')">Movies</button>
     <button class="nav-btn" data-view="music" onclick="showView('music')">Music</button>
+    <button class="nav-btn" data-view="form" onclick="showView('form')">Form</button>
     <button class="nav-btn" data-view="profile" onclick="showView('profile')">Profile</button>
     <button class="nav-btn" data-view="friends" onclick="showView('friends')">Friends</button>
     <button class="nav-btn" data-view="chat" onclick="showView('chat')">Chat</button>
@@ -1094,12 +1066,9 @@
     <!-- GAMES VIEW -->
     <section id="view-games" class="view">
       <div class="carousel-wrap" id="games-carousel-wrap">
-        <button class="carousel-arrow left" onmousedown="startHoldScroll(-1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(-1)" ontouchend="stopHoldScroll()">&#10094;</button>
+        <button class="carousel-arrow left" onclick="scrollCarousel(-1)">&#10094;</button>
         <div class="carousel-track" id="games-track" tabindex="0"></div>
-        <button class="carousel-arrow right" onmousedown="startHoldScroll(1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(1)" ontouchend="stopHoldScroll()">&#10095;</button>
-      </div>
-      <div class="carousel-scrollbar-track" id="carousel-scrollbar-track">
-        <div class="carousel-scrollbar-thumb" id="carousel-scrollbar-thumb"></div>
+        <button class="carousel-arrow right" onclick="scrollCarousel(1)">&#10095;</button>
       </div>
       <div class="game-grid" id="games-grid-all" style="display:none;"></div>
     </section>
@@ -1107,6 +1076,11 @@
     <!-- MUSIC VIEW -->
     <section id="view-music" class="view">
       <h1 class="hero-title">Music</h1>
+    </section>
+
+    <!-- FORM VIEW -->
+    <section id="view-form" class="view">
+      <h1 class="hero-title">Form</h1>
     </section>
 
     <!-- SETTINGS VIEW -->
@@ -1151,7 +1125,6 @@
       <div id="game-embed-wrap" class="game-embed-wrap" style="display:none;">
         <iframe id="game-embed-frame" class="game-embed-frame" allowfullscreen></iframe>
         <button class="detail-home-btn embed-home-btn" onclick="goHomeFromGame()">&#8962; Home</button>
-        <button class="detail-home-btn embed-fullscreen-btn" onclick="fullscreenGame()">&#9974; Fullscreen</button>
       </div>
       <button class="detail-home-btn" onclick="showView('home')">&#8962; Home</button>
     </section>
@@ -1230,17 +1203,17 @@
       </div>
     </section>
 
-    <!-- VIEW PROFILE MODAL -->
-    <div id="view-profile-overlay" class="auth-modal-overlay">
-      <div class="auth-modal">
-        <button class="auth-modal-close" onclick="closeViewProfile()">&times;</button>
-        <img id="view-profile-pic" class="profile-pic profile-pic-large" src="" alt="Profile picture" style="display:none;">
-        <div id="view-profile-pic-fallback" class="profile-pic-fallback profile-pic-fallback-large">?</div>
-        <h2 class="auth-modal-title" id="view-profile-username"></h2>
-        <p id="view-profile-bio" class="profile-bio-display"></p>
-        <button id="view-profile-add-btn" class="play-btn" style="margin-top:16px;">Add Friend</button>
+    <!-- VIEW USER PROFILE (full page) -->
+    <section id="view-user-profile" class="view">
+      <button class="detail-back" onclick="closeViewProfile()">&#8592; Back</button>
+      <div class="profile-pic-wrap">
+        <img id="view-profile-pic" class="profile-pic" src="" alt="Profile picture" style="display:none;">
+        <div id="view-profile-pic-fallback" class="profile-pic-fallback">?</div>
       </div>
-    </div>
+      <h1 class="hero-title" id="view-profile-username"></h1>
+      <p class="profile-bio-display" id="view-profile-bio"></p>
+      <button id="view-profile-add-btn" class="play-btn" style="margin-top:16px;">Add Friend</button>
+    </section>
 
     <!-- FRIENDS VIEW -->
     <section id="view-friends" class="view">
@@ -1590,7 +1563,6 @@
       gamesTrack.appendChild(renderCard(game));
       gamesGridAll.appendChild(renderCard(game));
     });
-    updateCarouselScrollbar();
   }
 
   const THEME_KEY = "g4m3_theme";
@@ -1625,34 +1597,16 @@
   function applyGamesLayout() {
     const mode = getGamesLayout();
     const carouselWrap = document.getElementById("games-carousel-wrap");
-    const scrollbarTrack = document.getElementById("carousel-scrollbar-track");
     const gridAll = document.getElementById("games-grid-all");
     if (mode === "grid") {
       carouselWrap.style.display = "none";
-      scrollbarTrack.style.display = "none";
       gridAll.style.display = "grid";
     } else {
       carouselWrap.style.display = "flex";
-      scrollbarTrack.style.display = "block";
       gridAll.style.display = "none";
     }
     const radio = document.querySelector(`input[name="games-layout"][value="${mode}"]`);
     if (radio) radio.checked = true;
-  }
-
-  function updateCarouselScrollbar() {
-    const track = document.getElementById("games-track");
-    const barTrack = document.getElementById("carousel-scrollbar-track");
-    const thumb = document.getElementById("carousel-scrollbar-thumb");
-    if (!track || !barTrack || !thumb) return;
-    const trackWidth = barTrack.clientWidth - 4;
-    const ratio = Math.min(1, track.clientWidth / track.scrollWidth);
-    const thumbWidth = Math.max(30, ratio * trackWidth);
-    const maxScroll = track.scrollWidth - track.clientWidth;
-    const scrollRatio = maxScroll > 0 ? track.scrollLeft / maxScroll : 0;
-    const thumbLeft = scrollRatio * (trackWidth - thumbWidth);
-    thumb.style.width = thumbWidth + "px";
-    thumb.style.left = (2 + thumbLeft) + "px";
   }
 
   function showView(view) {
@@ -1666,7 +1620,6 @@
     }
     if (view === "games") {
       applyGamesLayout();
-      updateCarouselScrollbar();
     }
     if (view === "settings") {
       applyGamesLayout();
@@ -1746,20 +1699,12 @@
     };
     wrap.style.display = "block";
     document.getElementById("detail-play").style.display = "none";
-    fullscreenGame();
   };
 
   window.goHomeFromGame = function () {
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    }
+    document.getElementById("game-embed-wrap").style.display = "none";
+    document.getElementById("game-embed-frame").src = "";
     showView("home");
-  };
-
-  window.fullscreenGame = function () {
-    const wrap = document.getElementById("game-embed-wrap");
-    if (wrap.requestFullscreen) wrap.requestFullscreen().catch(() => {});
-    else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
   };
 
   function scrollCarousel(direction) {
@@ -1773,59 +1718,6 @@
     if (e.key === "ArrowLeft") scrollCarousel(-1);
     if (e.key === "ArrowRight") scrollCarousel(1);
   });
-
-  document.getElementById("games-track").addEventListener("scroll", updateCarouselScrollbar);
-  window.addEventListener("resize", updateCarouselScrollbar);
-
-  document.getElementById("carousel-scrollbar-track").addEventListener("click", (e) => {
-    if (e.target.id === "carousel-scrollbar-thumb") return;
-    const track = document.getElementById("games-track");
-    const barTrack = e.currentTarget;
-    const rect = barTrack.getBoundingClientRect();
-    const clickRatio = (e.clientX - rect.left) / rect.width;
-    const maxScroll = track.scrollWidth - track.clientWidth;
-    track.scrollTo({ left: clickRatio * maxScroll, behavior: "smooth" });
-  });
-
-  let scrollbarDragging = false;
-  const scrollbarThumbEl = document.getElementById("carousel-scrollbar-thumb");
-  scrollbarThumbEl.addEventListener("pointerdown", (e) => {
-    scrollbarDragging = true;
-    scrollbarThumbEl.classList.add("dragging");
-    scrollbarThumbEl.setPointerCapture(e.pointerId);
-  });
-  scrollbarThumbEl.addEventListener("pointermove", (e) => {
-    if (!scrollbarDragging) return;
-    const barTrack = document.getElementById("carousel-scrollbar-track");
-    const track = document.getElementById("games-track");
-    const rect = barTrack.getBoundingClientRect();
-    const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    const maxScroll = track.scrollWidth - track.clientWidth;
-    track.scrollLeft = ratio * maxScroll;
-  });
-  const endScrollbarDrag = (e) => {
-    scrollbarDragging = false;
-    scrollbarThumbEl.classList.remove("dragging");
-  };
-  scrollbarThumbEl.addEventListener("pointerup", endScrollbarDrag);
-  scrollbarThumbEl.addEventListener("pointercancel", endScrollbarDrag);
-
-  let holdScrollInterval = null;
-  let holdScrollTimeout = null;
-  window.startHoldScroll = function (direction) {
-    scrollCarousel(direction);
-    clearTimeout(holdScrollTimeout);
-    clearInterval(holdScrollInterval);
-    holdScrollTimeout = setTimeout(() => {
-      holdScrollInterval = setInterval(() => {
-        document.getElementById("games-track").scrollBy({ left: direction * 14 });
-      }, 16);
-    }, 350);
-  };
-  window.stopHoldScroll = function () {
-    clearTimeout(holdScrollTimeout);
-    clearInterval(holdScrollInterval);
-  };
 
   renderGrids();
   renderUpdateLog();
@@ -1986,12 +1878,18 @@
     }
   }
 
+  let profileReturnView = "home";
+
   window.closeViewProfile = function () {
-    document.getElementById("view-profile-overlay").classList.remove("show");
+    showView(profileReturnView);
   };
 
   window.showUserProfile = async function (uid) {
     if (!uid) return;
+    const activeSection = document.querySelector(".view.active");
+    if (activeSection && activeSection.id !== "view-user-profile") {
+      profileReturnView = activeSection.id.replace("view-", "");
+    }
     const snap = await getDoc(doc(db, "users", uid));
     const data = snap.exists() ? snap.data() : {};
     document.getElementById("view-profile-username").textContent = data.displayName || data.username || data.email || "Guest";
@@ -2021,7 +1919,7 @@
         addBtn.onclick = () => addFriendByUid(uid, addBtn);
       }
     }
-    document.getElementById("view-profile-overlay").classList.add("show");
+    showView("user-profile");
   };
 
   window.handleGoogleSignIn = async function () {
