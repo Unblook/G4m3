@@ -262,6 +262,13 @@
     border-radius: 8px;
     box-shadow: 0 0 8px 1px #ffffff88;
     transition: box-shadow 0.15s ease;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .carousel-scrollbar-thumb.dragging {
+    cursor: grabbing;
+    box-shadow: 0 0 14px 3px #fff;
   }
 
   .carousel-scrollbar-track:hover .carousel-scrollbar-thumb {
@@ -422,6 +429,28 @@
   .game-embed-wrap {
     margin-top: 30px;
     max-width: 1000px;
+    position: relative;
+  }
+
+  .embed-home-btn,
+  .embed-fullscreen-btn {
+    position: absolute;
+    top: 22px;
+    z-index: 50;
+    opacity: 0.85;
+  }
+
+  .embed-home-btn {
+    left: 10px;
+  }
+
+  .embed-fullscreen-btn {
+    left: 130px;
+  }
+
+  .embed-home-btn:hover,
+  .embed-fullscreen-btn:hover {
+    opacity: 1;
   }
 
   .game-embed-frame {
@@ -873,6 +902,82 @@
     box-shadow: none;
   }
 
+  /* ---------- Light mode ---------- */
+  body.light-mode {
+    background: #f4f4f4;
+    color: #111;
+  }
+
+  body.light-mode .sidebar {
+    background: #fff;
+    border-right-color: #00000022;
+  }
+
+  body.light-mode .nav-btn {
+    color: #444;
+  }
+
+  body.light-mode .nav-btn:hover,
+  body.light-mode .nav-btn.active {
+    color: #000;
+    background: #0000000d;
+  }
+
+  body.light-mode .nav-btn.active {
+    border-left-color: #000;
+    box-shadow: inset 0 0 12px #00000022;
+  }
+
+  body.light-mode .game-card,
+  body.light-mode .auth-box .auth-input,
+  body.light-mode .auth-input,
+  body.light-mode .auth-modal,
+  body.light-mode .detail-thumb,
+  body.light-mode .chat-messages,
+  body.light-mode .update-entry,
+  body.light-mode .yt-caption,
+  body.light-mode .friend-item,
+  body.light-mode .account-row,
+  body.light-mode .carousel-scrollbar-track,
+  body.light-mode .carousel-arrow,
+  body.light-mode .detail-back,
+  body.light-mode .detail-home-btn,
+  body.light-mode .avatar-small-fallback,
+  body.light-mode .profile-pic-fallback,
+  body.light-mode .thumb {
+    background: #fff;
+    border-color: #00000033;
+    color: #111;
+  }
+
+  body.light-mode .thumb {
+    background: linear-gradient(135deg, #eaeaea, #dcdcdc);
+  }
+
+  body.light-mode .play-btn {
+    background: #111;
+    color: #fff;
+  }
+
+  body.light-mode .account-add-btn {
+    background: #111;
+    color: #fff;
+  }
+
+  body.light-mode .games-label,
+  body.light-mode .profile-line,
+  body.light-mode .desc,
+  body.light-mode .yt-caption,
+  body.light-mode .update-date,
+  body.light-mode .auth-heading,
+  body.light-mode .chat-message .sender {
+    color: #555;
+  }
+
+  body.light-mode .games-label {
+    background: #f4f4f4;
+  }
+
   /* ---------- Mobile responsiveness ---------- */
   @media (max-width: 700px) {
     .sidebar {
@@ -989,9 +1094,9 @@
     <!-- GAMES VIEW -->
     <section id="view-games" class="view">
       <div class="carousel-wrap" id="games-carousel-wrap">
-        <button class="carousel-arrow left" onclick="scrollCarousel(-1)">&#10094;</button>
+        <button class="carousel-arrow left" onmousedown="startHoldScroll(-1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(-1)" ontouchend="stopHoldScroll()">&#10094;</button>
         <div class="carousel-track" id="games-track" tabindex="0"></div>
-        <button class="carousel-arrow right" onclick="scrollCarousel(1)">&#10095;</button>
+        <button class="carousel-arrow right" onmousedown="startHoldScroll(1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(1)" ontouchend="stopHoldScroll()">&#10095;</button>
       </div>
       <div class="carousel-scrollbar-track" id="carousel-scrollbar-track">
         <div class="carousel-scrollbar-thumb" id="carousel-scrollbar-thumb"></div>
@@ -1011,6 +1116,11 @@
       <div class="auth-box">
         <label class="settings-radio"><input type="radio" name="games-layout" value="carousel" onchange="setGamesLayout('carousel')"> Scrolling row</label>
         <label class="settings-radio"><input type="radio" name="games-layout" value="grid" onchange="setGamesLayout('grid')"> Grid (show all)</label>
+      </div>
+      <h2 class="section-title" style="margin-top:36px;">Theme</h2>
+      <div class="auth-box">
+        <label class="settings-radio"><input type="radio" name="theme-mode" value="dark" onchange="setThemeMode('dark')"> Dark mode</label>
+        <label class="settings-radio"><input type="radio" name="theme-mode" value="light" onchange="setThemeMode('light')"> Light mode</label>
       </div>
     </section>
 
@@ -1039,8 +1149,9 @@
         </div>
       </div>
       <div id="game-embed-wrap" class="game-embed-wrap" style="display:none;">
-        <button class="play-btn" onclick="fullscreenGame()">Fullscreen</button>
         <iframe id="game-embed-frame" class="game-embed-frame" allowfullscreen></iframe>
+        <button class="detail-home-btn embed-home-btn" onclick="goHomeFromGame()">&#8962; Home</button>
+        <button class="detail-home-btn embed-fullscreen-btn" onclick="fullscreenGame()">&#9974; Fullscreen</button>
       </div>
       <button class="detail-home-btn" onclick="showView('home')">&#8962; Home</button>
     </section>
@@ -1127,6 +1238,7 @@
         <div id="view-profile-pic-fallback" class="profile-pic-fallback profile-pic-fallback-large">?</div>
         <h2 class="auth-modal-title" id="view-profile-username"></h2>
         <p id="view-profile-bio" class="profile-bio-display"></p>
+        <button id="view-profile-add-btn" class="play-btn" style="margin-top:16px;">Add Friend</button>
       </div>
     </div>
 
@@ -1144,6 +1256,9 @@
               <button class="play-btn" onclick="handleAddFriend()">Add Friend</button>
               <p id="friend-error" class="auth-error"></p>
             </div>
+            <h3 class="auth-heading">Friend Requests</h3>
+            <div id="friend-requests-list" class="friends-list"></div>
+            <h3 class="auth-heading" style="margin-top:26px;">Your Friends</h3>
             <div id="friends-list" class="friends-list"></div>
           </div>
           <div class="all-accounts-sidebar">
@@ -1478,6 +1593,24 @@
     updateCarouselScrollbar();
   }
 
+  const THEME_KEY = "g4m3_theme";
+
+  function getThemeMode() {
+    return localStorage.getItem(THEME_KEY) || "dark";
+  }
+
+  window.setThemeMode = function (mode) {
+    localStorage.setItem(THEME_KEY, mode);
+    applyThemeMode();
+  };
+
+  function applyThemeMode() {
+    const mode = getThemeMode();
+    document.body.classList.toggle("light-mode", mode === "light");
+    const radio = document.querySelector(`input[name="theme-mode"][value="${mode}"]`);
+    if (radio) radio.checked = true;
+  }
+
   const GAMES_LAYOUT_KEY = "g4m3_games_layout";
 
   function getGamesLayout() {
@@ -1537,10 +1670,12 @@
     }
     if (view === "settings") {
       applyGamesLayout();
+      applyThemeMode();
     }
     if (view === "friends" && window.__g4m3SignedIn && typeof window.loadAllAccounts === "function") {
       window.loadAllAccounts();
       window.loadFriends();
+      window.loadFriendRequests();
     }
     if (view === "chat" && window.__g4m3SignedIn && typeof window.loadChatDmList === "function") {
       window.loadChatDmList();
@@ -1596,6 +1731,7 @@
     if (!currentGameUrl) return;
     recordRecentPlay(currentGameId);
     const frame = document.getElementById("game-embed-frame");
+    const wrap = document.getElementById("game-embed-wrap");
     frame.src = currentGameUrl;
     frame.onload = () => {
       try {
@@ -1608,15 +1744,22 @@
         // Cross-origin or inaccessible — silently skip.
       }
     };
-    document.getElementById("game-embed-wrap").style.display = "block";
+    wrap.style.display = "block";
     document.getElementById("detail-play").style.display = "none";
-    document.getElementById("game-embed-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
+    fullscreenGame();
+  };
+
+  window.goHomeFromGame = function () {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    showView("home");
   };
 
   window.fullscreenGame = function () {
-    const frame = document.getElementById("game-embed-frame");
-    if (frame.requestFullscreen) frame.requestFullscreen();
-    else if (frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
+    const wrap = document.getElementById("game-embed-wrap");
+    if (wrap.requestFullscreen) wrap.requestFullscreen().catch(() => {});
+    else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
   };
 
   function scrollCarousel(direction) {
@@ -1635,6 +1778,7 @@
   window.addEventListener("resize", updateCarouselScrollbar);
 
   document.getElementById("carousel-scrollbar-track").addEventListener("click", (e) => {
+    if (e.target.id === "carousel-scrollbar-thumb") return;
     const track = document.getElementById("games-track");
     const barTrack = e.currentTarget;
     const rect = barTrack.getBoundingClientRect();
@@ -1643,10 +1787,51 @@
     track.scrollTo({ left: clickRatio * maxScroll, behavior: "smooth" });
   });
 
+  let scrollbarDragging = false;
+  const scrollbarThumbEl = document.getElementById("carousel-scrollbar-thumb");
+  scrollbarThumbEl.addEventListener("pointerdown", (e) => {
+    scrollbarDragging = true;
+    scrollbarThumbEl.classList.add("dragging");
+    scrollbarThumbEl.setPointerCapture(e.pointerId);
+  });
+  scrollbarThumbEl.addEventListener("pointermove", (e) => {
+    if (!scrollbarDragging) return;
+    const barTrack = document.getElementById("carousel-scrollbar-track");
+    const track = document.getElementById("games-track");
+    const rect = barTrack.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    track.scrollLeft = ratio * maxScroll;
+  });
+  const endScrollbarDrag = (e) => {
+    scrollbarDragging = false;
+    scrollbarThumbEl.classList.remove("dragging");
+  };
+  scrollbarThumbEl.addEventListener("pointerup", endScrollbarDrag);
+  scrollbarThumbEl.addEventListener("pointercancel", endScrollbarDrag);
+
+  let holdScrollInterval = null;
+  let holdScrollTimeout = null;
+  window.startHoldScroll = function (direction) {
+    scrollCarousel(direction);
+    clearTimeout(holdScrollTimeout);
+    clearInterval(holdScrollInterval);
+    holdScrollTimeout = setTimeout(() => {
+      holdScrollInterval = setInterval(() => {
+        document.getElementById("games-track").scrollBy({ left: direction * 14 });
+      }, 16);
+    }, 350);
+  };
+  window.stopHoldScroll = function () {
+    clearTimeout(holdScrollTimeout);
+    clearInterval(holdScrollInterval);
+  };
+
   renderGrids();
   renderUpdateLog();
   renderRecentGrid();
   applyGamesLayout();
+  applyThemeMode();
 </script>
 
 <!-- ===================== FIREBASE ===================== -->
@@ -1658,7 +1843,7 @@
     GoogleAuthProvider, signInWithPopup, signInAnonymously
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, deleteDoc, runTransaction,
+    getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc, runTransaction,
     collection, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
@@ -1816,6 +2001,26 @@
       document.getElementById("view-profile-pic-fallback"),
       data.photo || null
     );
+    const addBtn = document.getElementById("view-profile-add-btn");
+    if (currentUser && uid === currentUser.uid) {
+      addBtn.style.display = "none";
+    } else {
+      addBtn.style.display = "inline-block";
+      const mySnap = currentUser ? await getDoc(doc(db, "users", currentUser.uid)) : null;
+      const myFriends = (mySnap && mySnap.exists() && mySnap.data().friends) || [];
+      const alreadyRequested = (data.incomingRequests || []).includes(currentUser ? currentUser.uid : "");
+      if (myFriends.includes(uid)) {
+        addBtn.textContent = "Friends";
+        addBtn.disabled = true;
+      } else if (alreadyRequested) {
+        addBtn.textContent = "Requested";
+        addBtn.disabled = true;
+      } else {
+        addBtn.textContent = "Add Friend";
+        addBtn.disabled = false;
+        addBtn.onclick = () => addFriendByUid(uid, addBtn);
+      }
+    }
     document.getElementById("view-profile-overlay").classList.add("show");
   };
 
@@ -1910,6 +2115,16 @@
     }
   };
 
+  async function sendFriendRequest(friendUid) {
+    if (!currentUser || friendUid === currentUser.uid) throw new Error("That's you!");
+    const mySnap = await getDoc(doc(db, "users", currentUser.uid));
+    const myFriends = (mySnap.exists() && mySnap.data().friends) || [];
+    if (myFriends.includes(friendUid)) throw new Error("Already friends.");
+    await updateDoc(doc(db, "users", friendUid), {
+      incomingRequests: arrayUnion(currentUser.uid)
+    });
+  }
+
   window.handleAddFriend = async function () {
     setAuthError("friend-error", "");
     const identifier = document.getElementById("friend-email").value.trim();
@@ -1927,15 +2142,9 @@
         setAuthError("friend-error", "No account found with that email or username.");
         return;
       }
-      if (friendUid === currentUser.uid) {
-        setAuthError("friend-error", "That's you!");
-        return;
-      }
-      await updateDoc(doc(db, "users", currentUser.uid), {
-        friends: arrayUnion(friendUid)
-      });
+      await sendFriendRequest(friendUid);
       document.getElementById("friend-email").value = "";
-      loadFriends();
+      setAuthError("friend-error", "Friend request sent!");
     } catch (err) {
       setAuthError("friend-error", err.message);
     }
@@ -1966,20 +2175,67 @@
   }
 
   window.addFriendByUid = async function (friendUid, btn) {
-    if (!currentUser || friendUid === currentUser.uid) return;
     btn.disabled = true;
-    btn.textContent = "Added";
+    btn.textContent = "Requested";
     try {
-      await updateDoc(doc(db, "users", currentUser.uid), {
-        friends: arrayUnion(friendUid)
-      });
-      loadFriends();
+      await sendFriendRequest(friendUid);
     } catch (err) {
       btn.disabled = false;
       btn.textContent = "Add";
       console.error(err);
     }
   };
+
+  window.acceptFriendRequest = async function (requesterUid) {
+    if (!currentUser) return;
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      friends: arrayUnion(requesterUid),
+      incomingRequests: arrayRemove(requesterUid)
+    });
+    await updateDoc(doc(db, "users", requesterUid), {
+      friends: arrayUnion(currentUser.uid)
+    });
+    loadFriendRequests();
+    loadFriends();
+  };
+
+  window.declineFriendRequest = async function (requesterUid) {
+    if (!currentUser) return;
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      incomingRequests: arrayRemove(requesterUid)
+    });
+    loadFriendRequests();
+  };
+
+  async function loadFriendRequests() {
+    if (!currentUser) return;
+    const snap = await getDoc(doc(db, "users", currentUser.uid));
+    const requests = (snap.exists() && snap.data().incomingRequests) || [];
+    const list = document.getElementById("friend-requests-list");
+    if (!list) return;
+    list.innerHTML = "";
+    if (requests.length === 0) {
+      list.innerHTML = '<p class="profile-line">No pending requests.</p>';
+      return;
+    }
+    for (const requesterUid of requests) {
+      const reqSnap = await getDoc(doc(db, "users", requesterUid));
+      const data = reqSnap.exists() ? reqSnap.data() : {};
+      const name = data.displayName || data.username || data.email || "Guest";
+      const row = document.createElement("div");
+      row.className = "account-row";
+      const avatarHtml = data.photo
+        ? `<img class="avatar-small" src="${data.photo}" alt="">`
+        : `<div class="avatar-small-fallback">?</div>`;
+      row.innerHTML = `
+        ${avatarHtml}
+        <span onclick="showUserProfile('${requesterUid}')">${name}</span>
+        <button class="account-add-btn" onclick="acceptFriendRequest('${requesterUid}')">Accept</button>
+        <button class="account-add-btn" onclick="declineFriendRequest('${requesterUid}')">Decline</button>
+      `;
+      list.appendChild(row);
+    }
+  }
 
   async function loadAllAccounts() {
     if (!currentUser) return;
@@ -1998,11 +2254,16 @@
         ? `<img class="avatar-small" src="${data.photo}" alt="">`
         : `<div class="avatar-small-fallback">?</div>`;
       const alreadyFriend = myFriends.includes(uid);
+      const alreadyRequested = (data.incomingRequests || []).includes(currentUser.uid);
       const displayName = data.displayName || data.username;
+      let btnLabel = "Add";
+      let btnDisabled = "";
+      if (alreadyFriend) { btnLabel = "Friends"; btnDisabled = "disabled"; }
+      else if (alreadyRequested) { btnLabel = "Requested"; btnDisabled = "disabled"; }
       row.innerHTML = `
         ${avatarHtml}
         <span onclick="showUserProfile('${uid}')">${displayName}</span>
-        <button class="account-add-btn" ${alreadyFriend ? "disabled" : ""} onclick="addFriendByUid('${uid}', this)">${alreadyFriend ? "Added" : "Add"}</button>
+        <button class="account-add-btn" ${btnDisabled} onclick="addFriendByUid('${uid}', this)">${btnLabel}</button>
       `;
       list.appendChild(row);
     });
@@ -2133,6 +2394,7 @@
   window.loadFriends = loadFriends;
   window.loadAllAccounts = loadAllAccounts;
   window.loadChatDmList = loadChatDmList;
+  window.loadFriendRequests = loadFriendRequests;
 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
@@ -2175,6 +2437,7 @@
       currentLabel = label;
       loadFriends();
       loadAllAccounts();
+      loadFriendRequests();
       loadChatDmList();
       activeChatPath = "messages";
       startChatListener();
