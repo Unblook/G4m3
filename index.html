@@ -1066,9 +1066,9 @@
     <!-- GAMES VIEW -->
     <section id="view-games" class="view">
       <div class="carousel-wrap" id="games-carousel-wrap">
-        <button class="carousel-arrow left" onclick="scrollCarousel(-1)">&#10094;</button>
+        <button class="carousel-arrow left" onmousedown="startHoldScroll(-1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(-1)" ontouchend="stopHoldScroll()">&#10094;</button>
         <div class="carousel-track" id="games-track" tabindex="0"></div>
-        <button class="carousel-arrow right" onclick="scrollCarousel(1)">&#10095;</button>
+        <button class="carousel-arrow right" onmousedown="startHoldScroll(1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(1)" ontouchend="stopHoldScroll()">&#10095;</button>
       </div>
       <div class="game-grid" id="games-grid-all" style="display:none;"></div>
     </section>
@@ -1712,6 +1712,19 @@
     track.scrollBy({ left: direction * 300, behavior: "smooth" });
   }
 
+  let holdScrollInterval = null;
+  window.startHoldScroll = function (direction) {
+    if (holdScrollInterval) return;
+    const track = document.getElementById("games-track");
+    holdScrollInterval = setInterval(() => {
+      track.scrollLeft += direction * 12;
+    }, 16);
+  };
+  window.stopHoldScroll = function () {
+    clearInterval(holdScrollInterval);
+    holdScrollInterval = null;
+  };
+
   document.addEventListener("keydown", (e) => {
     const gamesView = document.getElementById("view-games");
     if (!gamesView.classList.contains("active")) return;
@@ -1767,6 +1780,13 @@
   let currentUser = null;
   let currentLabel = null;
   let chatUnsub = null;
+
+  function displayLabelFor(data) {
+    if (data.displayName) return data.displayName;
+    if (data.username) return data.username;
+    if (data.email) return data.email.split("@")[0];
+    return "Guest";
+  }
 
   function setAuthError(id, message) {
     document.getElementById(id).textContent = message || "";
@@ -1892,7 +1912,7 @@
     }
     const snap = await getDoc(doc(db, "users", uid));
     const data = snap.exists() ? snap.data() : {};
-    document.getElementById("view-profile-username").textContent = data.displayName || data.username || data.email || "Guest";
+    document.getElementById("view-profile-username").textContent = displayLabelFor(data);
     document.getElementById("view-profile-bio").textContent = data.bio || "No bio yet.";
     applyAvatar(
       document.getElementById("view-profile-pic"),
@@ -2067,7 +2087,7 @@
       const avatarHtml = data.photo
         ? `<img class="avatar-small" src="${data.photo}" alt="">`
         : `<div class="avatar-small-fallback">?</div>`;
-      item.innerHTML = `${avatarHtml}<span>${data.displayName || data.username || data.email || "Guest"}</span>`;
+      item.innerHTML = `${avatarHtml}<span>${displayLabelFor(data)}</span>`;
       list.appendChild(item);
     }
   }
@@ -2119,7 +2139,7 @@
     for (const requesterUid of requests) {
       const reqSnap = await getDoc(doc(db, "users", requesterUid));
       const data = reqSnap.exists() ? reqSnap.data() : {};
-      const name = data.displayName || data.username || data.email || "Guest";
+      const name = displayLabelFor(data);
       const row = document.createElement("div");
       row.className = "account-row";
       const avatarHtml = data.photo
@@ -2226,7 +2246,7 @@
     for (const friendUid of friends) {
       const friendSnap = await getDoc(doc(db, "users", friendUid));
       const data = friendSnap.exists() ? friendSnap.data() : {};
-      const name = data.displayName || data.username || data.email || "Guest";
+      const name = displayLabelFor(data);
       const row = document.createElement("div");
       row.className = "friend-item avatar-row chat-thread-row";
       const avatarHtml = data.photo
