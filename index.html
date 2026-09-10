@@ -266,6 +266,47 @@
     cursor: pointer;
   }
 
+  .games-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .games-search-input {
+    max-width: 360px;
+  }
+
+  .genre-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .genre-pill {
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    color: #ccc;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .genre-pill:hover {
+    border-color: #fff;
+    color: #fff;
+  }
+
+  .genre-pill.active {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    box-shadow: 0 0 8px 1px #ffffff88;
+  }
+
   .carousel-track .game-card {
     flex: 0 0 calc((100% - 64px) / 3);
   }
@@ -1065,12 +1106,17 @@
 
     <!-- GAMES VIEW -->
     <section id="view-games" class="view">
+      <div class="games-toolbar">
+        <input type="text" id="games-search" class="auth-input games-search-input" placeholder="Search games..." oninput="applyGameFilters()">
+        <div class="genre-filters" id="genre-filters"></div>
+      </div>
       <div class="carousel-wrap" id="games-carousel-wrap">
         <button class="carousel-arrow left" onmousedown="startHoldScroll(-1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(-1)" ontouchend="stopHoldScroll()">&#10094;</button>
         <div class="carousel-track" id="games-track" tabindex="0"></div>
         <button class="carousel-arrow right" onmousedown="startHoldScroll(1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(1)" ontouchend="stopHoldScroll()">&#10095;</button>
       </div>
       <div class="game-grid" id="games-grid-all" style="display:none;"></div>
+      <p id="games-no-results" class="recent-empty" style="display:none;">No games match your search/filter.</p>
     </section>
 
     <!-- MUSIC VIEW -->
@@ -1272,118 +1318,118 @@
 
 <script>
   const games = [
-    { id: "1.8.8", title: "Eaglercraft 1.8.8" },
-    { id: "1.12.2", title: "Eaglercraft 1.12.2" },
-    { id: "1v1lol", title: "1v1.LOL" },
-    { id: "backrooms", title: "Backrooms" },
-    { id: "badparenting", title: "Bad Parenting" },
-    { id: "baldisbasics", title: "Baldi's Basics" },
-    { id: "bankrobbery1", title: "Bank Robbery" },
-    { id: "bankrobbery2", title: "Bank Robbery 2" },
-    { id: "baseballbros", title: "Baseball Bros" },
-    { id: "basketballstars", title: "Basketball Stars" },
-    { id: "basketbros", title: "Basket Bros" },
-    { id: "basketrandom", title: "Basket Random" },
-    { id: "bendy", title: "Bendy and the Ink Machine (Work in Progress)" },
-    { id: "bindingofisaac", title: "The Binding of Isaac" },
-    { id: "bitlife", title: "BitLife" },
-    { id: "bitplanes", title: "Bit Planes" },
-    { id: "blockblast", title: "Block Blast" },
-    { id: "bottlejump3d", title: "Bottle Jump 3D (Work in Progress)" },
-    { id: "bouncemasters", title: "Bouncemasters" },
-    { id: "boxingrandom", title: "Boxing Random" },
-    { id: "buckshotroulette", title: "Buckshot Roulette (Work in Progress)" },
-    { id: "buildnow", title: "Build Now GG" },
-    { id: "cookieclicker", title: "Cookie Clicker" },
-    { id: "coreball", title: "Core Ball" },
-    { id: "crossyroad", title: "Crossy Road" },
-    { id: "cuphead", title: "Cuphead" },
-    { id: "cuttherope", title: "Cut the Rope" },
-    { id: "googlebaseball", title: "Doodle Baseball" }, 
-    { id: "doodlejump", title: "Doodle Jump" },
-    { id: "doom1", title: "DOOM" },
-    { id: "doom2", title: "DOOM II" },
-    { id: "driftboss", title: "Drift Boss" },
-    { id: "drifthunters", title: "Drift Hunters" },
-    { id: "endoparasitic1", title: "Endoparasitic" },
-    { id: "endoparasitic2", title: "Endoparasitic 2" },
-    { id: "escaperoad1", title: "Escape Road" },
-    { id: "escaperoad2", title: "Escape Road 2" },
-    { id: "escaperoad3", title: "Escape Road 3" },
-    { id: "fallout", title: "Fallout" },
-    { id: "fearstofathom", title: "Fears to Fathom" },
-    { id: "ffps", title: "Freddy Fazbear's Pizzeria Simulator" },
-    { id: "flappybird", title: "Flappy Bird" },
-    { id: "fnac1", title: "Five Nights at Candy's" },
-    { id: "fnac2", title: "Five Nights at Candy's 2" },
-    { id: "fnaf1", title: "Five Nights at Freddy's" },
-    { id: "fnaf2", title: "Five Nights at Freddy's 2" },
-    { id: "fnaf3", title: "Five Nights at Freddy's 3" },
-    { id: "fnaf4", title: "Five Nights at Freddy's 4" },
-    { id: "fnaf4halloween", title: "Five Nights at Freddy's 4: Halloween Edition" },
-    { id: "fnafsl", title: "Five Nights at Freddy's: Sister Location" },
-    { id: "footballbros", title: "Football Bros" },
-    { id: "fruitninja", title: "Fruit Ninja" },
-    { id: "gag", title: "Grow a Garden" },
-    { id: "geometrydash", title: "Geometry Dash (Work in Progress)" },
-    { id: "gettingoverit", title: "Getting Over It (Work in Progress)" },
-    { id: "granny1", title: "Granny" },
-    { id: "granny2", title: "Granny 2" },
-    { id: "granny3", title: "Granny 3" },
-    { id: "halflife", title: "Half-Life" },
-    { id: "hillclimbracing", title: "Hill Climb Racing" },
-    { id: "hollowknight", title: "Hollow Knight" },
-    { id: "ironlung", title: "Iron Lung" },
-    { id: "jellydrift", title: "Jelly Drift" },
-    { id: "jetpackjoyride", title: "Jetpack Joyride (Work in Progress)" },
-    { id: "johnnytrigger", title: "Johnny Trigger" },
-    { id: "kindergarten1", title: "Kindergarten (Work in Progress)" },
-    { id: "kindergarten2", title: "Kindergarten 2 (Work in Progress)" },
-    { id: "kindergarten3", title: "Kindergarten 3" },
-    { id: "learntofly3", title: "Learn to Fly 3" },
-    { id: "melonplayground", title: "Melon Playground" },
-    { id: "motox3m", title: "Moto X3M" },
-    { id: "nazizombies", title: "Nazi Zombies" },
-    { id: "omori", title: "OMORI" },
-    { id: "ovo", title: "OvO" },
-    { id: "papersplease", title: "Papers, Please" },
-    { id: "peggle", title: "Peggle" },
-    { id: "pixelgun", title: "Pixel Gun 3D" },
-    { id: "plantsvszombies1", title: "Plants vs. Zombies" },
-    { id: "plantsvszombies2", title: "Plants vs. Zombies 2" },
-    { id: "pokemon", title: "Pokémon" },
-    { id: "raft", title: "Raft (Work in Progress)" },
-    { id: "ragdollarchers", title: "Ragdoll Archers" },
-    { id: "ragdollhit", title: "Ragdoll Hit" },
-    { id: "repo", title: "R.E.P.O. (Work in Progress)" },
-    { id: "retrobowl", title: "Retro Bowl" },
-    { id: "retrobowlcollege", title: "Retro Bowl College" },
-    { id: "schoolboyrunaway", title: "Schoolboy Runaway" },
-    { id: "silksong", title: "Hollow Knight: Silksong (Work in Progress)" },
-    { id: "slenderman", title: "Slender Man" },
-    { id: "slimerancher", title: "Slime Rancher" },
-    { id: "slope", title: "Slope" },
-    { id: "smashkarts", title: "Smash Karts" },
-    { id: "snowrider3d", title: "Snow Rider 3D" },
-    { id: "soccerrandom", title: "Soccer Random" },
-    { id: "stardewvalley", title: "Stardew Valley" },
-    { id: "stealabrainrot", title: "Steal a Brainrot" },
-    { id: "stickmanhook", title: "Stickman Hook" },
-    { id: "superhot", title: "SUPERHOT" },
-    { id: "supermario64", title: "Super Mario 64" },
-    { id: "subwaysurfers", title: "Subway Surfers" },
-    { id: "amonus", title: "Among Us" },
-    { id: "supermariobros", title: "Super Mario Bros." },
-    { id: "survivalrace", title: "Survival Race" },
-    { id: "terraria", title: "Terraria" },
-    { id: "thatsnotmyneighbor", title: "That's Not My Neighbor (Work in Progress)" },
-    { id: "theyarecoming", title: "They Are Coming" },
-    { id: "tinyfishing", title: "Tiny Fishing" },
-    { id: "tombofthemask", title: "Tomb of the Mask" },
-    { id: "ucn", title: "Ultimate Custom Night" },
-    { id: "ultrakill", title: "ULTRAKILL" },
-    { id: "undertale", title: "Undertale" },
-    { id: "volleyrandom", title: "Volley Random" }
+    { id: "1.8.8", title: "Eaglercraft 1.8.8", genre: "Sandbox" },
+    { id: "1.12.2", title: "Eaglercraft 1.12.2", genre: "Sandbox" },
+    { id: "1v1lol", title: "1v1.LOL", genre: "Shooter" },
+    { id: "backrooms", title: "Backrooms", genre: "Horror" },
+    { id: "badparenting", title: "Bad Parenting", genre: "Horror" },
+    { id: "baldisbasics", title: "Baldi's Basics", genre: "Horror" },
+    { id: "bankrobbery1", title: "Bank Robbery", genre: "Action" },
+    { id: "bankrobbery2", title: "Bank Robbery 2", genre: "Action" },
+    { id: "baseballbros", title: "Baseball Bros", genre: "Sports" },
+    { id: "basketballstars", title: "Basketball Stars", genre: "Sports" },
+    { id: "basketbros", title: "Basket Bros", genre: "Sports" },
+    { id: "basketrandom", title: "Basket Random", genre: "Sports" },
+    { id: "bendy", title: "Bendy and the Ink Machine (Work in Progress)", genre: "Horror" },
+    { id: "bindingofisaac", title: "The Binding of Isaac", genre: "Action" },
+    { id: "bitlife", title: "BitLife", genre: "Simulation" },
+    { id: "bitplanes", title: "Bit Planes", genre: "Shooter" },
+    { id: "blockblast", title: "Block Blast", genre: "Puzzle" },
+    { id: "bottlejump3d", title: "Bottle Jump 3D (Work in Progress)", genre: "Arcade" },
+    { id: "bouncemasters", title: "Bouncemasters", genre: "Arcade" },
+    { id: "boxingrandom", title: "Boxing Random", genre: "Sports" },
+    { id: "buckshotroulette", title: "Buckshot Roulette (Work in Progress)", genre: "Horror" },
+    { id: "buildnow", title: "Build Now GG", genre: "Sandbox" },
+    { id: "cookieclicker", title: "Cookie Clicker", genre: "Simulation" },
+    { id: "coreball", title: "Core Ball", genre: "Arcade" },
+    { id: "crossyroad", title: "Crossy Road", genre: "Arcade" },
+    { id: "cuphead", title: "Cuphead", genre: "Action" },
+    { id: "cuttherope", title: "Cut the Rope", genre: "Puzzle" },
+    { id: "googlebaseball", title: "Doodle Baseball", genre: "Sports" }, 
+    { id: "doodlejump", title: "Doodle Jump", genre: "Arcade" },
+    { id: "doom1", title: "DOOM", genre: "Shooter" },
+    { id: "doom2", title: "DOOM II", genre: "Shooter" },
+    { id: "driftboss", title: "Drift Boss", genre: "Racing" },
+    { id: "drifthunters", title: "Drift Hunters", genre: "Racing" },
+    { id: "endoparasitic1", title: "Endoparasitic", genre: "Horror" },
+    { id: "endoparasitic2", title: "Endoparasitic 2", genre: "Horror" },
+    { id: "escaperoad1", title: "Escape Road", genre: "Racing" },
+    { id: "escaperoad2", title: "Escape Road 2", genre: "Racing" },
+    { id: "escaperoad3", title: "Escape Road 3", genre: "Racing" },
+    { id: "fallout", title: "Fallout", genre: "Action" },
+    { id: "fearstofathom", title: "Fears to Fathom", genre: "Horror" },
+    { id: "ffps", title: "Freddy Fazbear's Pizzeria Simulator", genre: "Horror" },
+    { id: "flappybird", title: "Flappy Bird", genre: "Arcade" },
+    { id: "fnac1", title: "Five Nights at Candy's", genre: "Horror" },
+    { id: "fnac2", title: "Five Nights at Candy's 2", genre: "Horror" },
+    { id: "fnaf1", title: "Five Nights at Freddy's", genre: "Horror" },
+    { id: "fnaf2", title: "Five Nights at Freddy's 2", genre: "Horror" },
+    { id: "fnaf3", title: "Five Nights at Freddy's 3", genre: "Horror" },
+    { id: "fnaf4", title: "Five Nights at Freddy's 4", genre: "Horror" },
+    { id: "fnaf4halloween", title: "Five Nights at Freddy's 4: Halloween Edition", genre: "Horror" },
+    { id: "fnafsl", title: "Five Nights at Freddy's: Sister Location", genre: "Horror" },
+    { id: "footballbros", title: "Football Bros", genre: "Sports" },
+    { id: "fruitninja", title: "Fruit Ninja", genre: "Arcade" },
+    { id: "gag", title: "Grow a Garden", genre: "Simulation" },
+    { id: "geometrydash", title: "Geometry Dash (Work in Progress)", genre: "Platformer" },
+    { id: "gettingoverit", title: "Getting Over It (Work in Progress)", genre: "Platformer" },
+    { id: "granny1", title: "Granny", genre: "Horror" },
+    { id: "granny2", title: "Granny 2", genre: "Horror" },
+    { id: "granny3", title: "Granny 3", genre: "Horror" },
+    { id: "halflife", title: "Half-Life", genre: "Shooter" },
+    { id: "hillclimbracing", title: "Hill Climb Racing", genre: "Racing" },
+    { id: "hollowknight", title: "Hollow Knight", genre: "Adventure" },
+    { id: "ironlung", title: "Iron Lung", genre: "Horror" },
+    { id: "jellydrift", title: "Jelly Drift", genre: "Racing" },
+    { id: "jetpackjoyride", title: "Jetpack Joyride (Work in Progress)", genre: "Arcade" },
+    { id: "johnnytrigger", title: "Johnny Trigger", genre: "Action" },
+    { id: "kindergarten1", title: "Kindergarten (Work in Progress)", genre: "Horror" },
+    { id: "kindergarten2", title: "Kindergarten 2 (Work in Progress)", genre: "Horror" },
+    { id: "kindergarten3", title: "Kindergarten 3", genre: "Horror" },
+    { id: "learntofly3", title: "Learn to Fly 3", genre: "Arcade" },
+    { id: "melonplayground", title: "Melon Playground", genre: "Simulation" },
+    { id: "motox3m", title: "Moto X3M", genre: "Racing" },
+    { id: "nazizombies", title: "Nazi Zombies", genre: "Shooter" },
+    { id: "omori", title: "OMORI", genre: "Adventure" },
+    { id: "ovo", title: "OvO", genre: "Platformer" },
+    { id: "papersplease", title: "Papers, Please", genre: "Simulation" },
+    { id: "peggle", title: "Peggle", genre: "Puzzle" },
+    { id: "pixelgun", title: "Pixel Gun 3D", genre: "Shooter" },
+    { id: "plantsvszombies1", title: "Plants vs. Zombies", genre: "Strategy" },
+    { id: "plantsvszombies2", title: "Plants vs. Zombies 2", genre: "Strategy" },
+    { id: "pokemon", title: "Pokémon", genre: "Adventure" },
+    { id: "raft", title: "Raft (Work in Progress)", genre: "Adventure" },
+    { id: "ragdollarchers", title: "Ragdoll Archers", genre: "Action" },
+    { id: "ragdollhit", title: "Ragdoll Hit", genre: "Action" },
+    { id: "repo", title: "R.E.P.O. (Work in Progress)", genre: "Horror" },
+    { id: "retrobowl", title: "Retro Bowl", genre: "Sports" },
+    { id: "retrobowlcollege", title: "Retro Bowl College", genre: "Sports" },
+    { id: "schoolboyrunaway", title: "Schoolboy Runaway", genre: "Horror" },
+    { id: "silksong", title: "Hollow Knight: Silksong (Work in Progress)", genre: "Adventure" },
+    { id: "slenderman", title: "Slender Man", genre: "Horror" },
+    { id: "slimerancher", title: "Slime Rancher", genre: "Simulation" },
+    { id: "slope", title: "Slope", genre: "Arcade" },
+    { id: "smashkarts", title: "Smash Karts", genre: "Racing" },
+    { id: "snowrider3d", title: "Snow Rider 3D", genre: "Racing" },
+    { id: "soccerrandom", title: "Soccer Random", genre: "Sports" },
+    { id: "stardewvalley", title: "Stardew Valley", genre: "Simulation" },
+    { id: "stealabrainrot", title: "Steal a Brainrot", genre: "Simulation" },
+    { id: "stickmanhook", title: "Stickman Hook", genre: "Arcade" },
+    { id: "superhot", title: "SUPERHOT", genre: "Shooter" },
+    { id: "supermario64", title: "Super Mario 64", genre: "Platformer" },
+    { id: "subwaysurfers", title: "Subway Surfers", genre: "Arcade" },
+    { id: "amonus", title: "Among Us", genre: "Party" },
+    { id: "supermariobros", title: "Super Mario Bros.", genre: "Platformer" },
+    { id: "survivalrace", title: "Survival Race", genre: "Racing" },
+    { id: "terraria", title: "Terraria", genre: "Adventure" },
+    { id: "thatsnotmyneighbor", title: "That's Not My Neighbor (Work in Progress)", genre: "Horror" },
+    { id: "theyarecoming", title: "They Are Coming", genre: "Horror" },
+    { id: "tinyfishing", title: "Tiny Fishing", genre: "Arcade" },
+    { id: "tombofthemask", title: "Tomb of the Mask", genre: "Platformer" },
+    { id: "ucn", title: "Ultimate Custom Night", genre: "Horror" },
+    { id: "ultrakill", title: "ULTRAKILL", genre: "Shooter" },
+    { id: "undertale", title: "Undertale", genre: "Adventure" },
+    { id: "volleyrandom", title: "Volley Random", genre: "Sports" }
   ].map(g => ({
     ...g,
     desc: "Description coming soon.",
@@ -1548,6 +1594,43 @@
       grid.appendChild(renderCard(game));
     });
   }
+  const GENRES = [...new Set(games.map(g => g.genre))].sort();
+  let activeGenre = "All";
+
+  function renderGenrePills() {
+    const box = document.getElementById("genre-filters");
+    box.innerHTML = "";
+    const allBtn = document.createElement("button");
+    allBtn.className = "genre-pill active";
+    allBtn.textContent = "All";
+    allBtn.onclick = () => selectGenre("All", allBtn);
+    box.appendChild(allBtn);
+    GENRES.forEach(genre => {
+      const btn = document.createElement("button");
+      btn.className = "genre-pill";
+      btn.textContent = genre;
+      btn.onclick = () => selectGenre(genre, btn);
+      box.appendChild(btn);
+    });
+  }
+
+  function selectGenre(genre, btnEl) {
+    activeGenre = genre;
+    document.querySelectorAll(".genre-pill").forEach(b => b.classList.remove("active"));
+    btnEl.classList.add("active");
+    applyGameFilters();
+  }
+
+  window.applyGameFilters = function () {
+    const query = document.getElementById("games-search").value.trim().toLowerCase();
+    const filtered = games.filter(g => {
+      const matchesText = !query || g.title.toLowerCase().includes(query);
+      const matchesGenre = activeGenre === "All" || g.genre === activeGenre;
+      return matchesText && matchesGenre;
+    });
+    renderGrids(filtered);
+  };
+
   function renderCard(game) {
     const card = document.createElement("div");
     card.className = "game-card";
@@ -1562,15 +1645,20 @@
     return card;
   }
 
-  function renderGrids() {
+  function renderGrids(list) {
+    const gameList = list || games;
     const gamesTrack = document.getElementById("games-track");
     const gamesGridAll = document.getElementById("games-grid-all");
+    const noResults = document.getElementById("games-no-results");
     gamesTrack.innerHTML = "";
     gamesGridAll.innerHTML = "";
-    games.forEach(game => {
+    gameList.forEach(game => {
       gamesTrack.appendChild(renderCard(game));
       gamesGridAll.appendChild(renderCard(game));
     });
+    if (noResults) {
+      noResults.style.display = gameList.length === 0 ? "block" : "none";
+    }
   }
 
   const THEME_KEY = "g4m3_theme";
@@ -1740,6 +1828,7 @@
     if (e.key === "ArrowRight") scrollCarousel(1);
   });
 
+  renderGenrePills();
   renderGrids();
   renderUpdateLog();
   renderRecentGrid();
