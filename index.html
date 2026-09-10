@@ -1573,6 +1573,25 @@
 
   let currentGameId = null;
 
+  function stripAdsFromDoc(doc) {
+    try {
+      // The specific template pattern found in games sourced from gn-math.dev / Ultimate Game Stash
+      doc.querySelectorAll('[id^="sidebarad"]').forEach(el => el.remove());
+      // Common generic ad markers (whole-token class/id matches, not substring, to avoid false positives)
+      doc.querySelectorAll(
+        '.adsbygoogle, [id^="google_ads"], [class~="ad"], [class~="ads"], [class~="advert"], ' +
+        '[class~="advertisement"], [class~="banner-ad"], [id~="ad"], [id~="ads"], [id~="banner-ad"]'
+      ).forEach(el => el.remove());
+      // Common ad-network iframes
+      doc.querySelectorAll(
+        'iframe[src*="doubleclick.net"], iframe[src*="googlesyndication.com"], ' +
+        'iframe[src*="adnxs.com"], iframe[src*="adsystem"]'
+      ).forEach(el => el.remove());
+    } catch (e) {
+      // Ignore — best effort only.
+    }
+  }
+
   window.playEmbeddedGame = function () {
     if (!currentGameUrl) return;
     recordRecentPlay(currentGameId);
@@ -1582,7 +1601,9 @@
       try {
         const doc = frame.contentDocument;
         if (!doc) return;
-        doc.querySelectorAll('[id^="sidebarad"]').forEach(el => { el.style.display = "none"; });
+        stripAdsFromDoc(doc);
+        // Re-run after a short delay in case the game injects ads after its own load event
+        setTimeout(() => stripAdsFromDoc(doc), 1500);
       } catch (e) {
         // Cross-origin or inaccessible — silently skip.
       }
