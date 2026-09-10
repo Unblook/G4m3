@@ -1576,7 +1576,17 @@
   window.playEmbeddedGame = function () {
     if (!currentGameUrl) return;
     recordRecentPlay(currentGameId);
-    document.getElementById("game-embed-frame").src = currentGameUrl;
+    const frame = document.getElementById("game-embed-frame");
+    frame.src = currentGameUrl;
+    frame.onload = () => {
+      try {
+        const doc = frame.contentDocument;
+        if (!doc) return;
+        doc.querySelectorAll('[id^="sidebarad"]').forEach(el => { el.style.display = "none"; });
+      } catch (e) {
+        // Cross-origin or inaccessible — silently skip.
+      }
+    };
     document.getElementById("game-embed-wrap").style.display = "block";
     document.getElementById("detail-play").style.display = "none";
     document.getElementById("game-embed-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
