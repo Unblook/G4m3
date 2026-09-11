@@ -1117,9 +1117,7 @@
     bottom: 12px;
     left: 0;
     right: 0;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: flex-end;
+    height: 32px;
   }
 
   .claw-prize {
@@ -1130,6 +1128,8 @@
   }
 
   .claw-prize-box {
+    position: absolute;
+    bottom: 0;
     width: 40px;
     height: 32px;
     background: linear-gradient(180deg, #c98a44, #a86a28);
@@ -3511,23 +3511,48 @@
 
   // ---- Arcade: Claw Machine ----
   const CLAW_ENTRY_COST = 100;
-  const CLAW_WIN_WINDOW = 2.5; // % — very tight, real precision required
+  const CLAW_WIN_WINDOW = 1.2; // % — extremely tight, real precision required
   const CLAW_MOVE_SPEED = 0.9; // % per tick while holding the joystick
   const CLAW_PRIZE_VALUES = [1000, 250, 750, 100, 500];
+  const CLAW_LANE_WIDTH = 100 / CLAW_PRIZE_VALUES.length;
+  const CLAW_LANE_PAD = 6; // % — keeps each prize's drift inside its own lane, no overlap
+  const CLAW_DRIFT_SPEED = 0.06; // % per tick — slow drift
 
   let clawPos = 0;
   let clawMoveDir = 0;
   let clawMoveInterval = null;
   let clawBusy = false;
+  let clawPrizeStates = [];
+  let clawPrizeDriftInterval = null;
 
   function clawInit() {
     const prizesEl = document.getElementById("claw-prizes");
     prizesEl.innerHTML = "";
-    CLAW_PRIZE_VALUES.forEach(value => {
-      const p = document.createElement("div");
-      p.className = "claw-prize-box";
-      p.textContent = value;
-      prizesEl.appendChild(p);
+    clawPrizeStates = CLAW_PRIZE_VALUES.map((value, i) => {
+      const laneMin = i * CLAW_LANE_WIDTH + CLAW_LANE_PAD;
+      const laneMax = (i + 1) * CLAW_LANE_WIDTH - CLAW_LANE_PAD;
+      const el = document.createElement("div");
+      el.className = "claw-prize-box";
+      el.textContent = value;
+      prizesEl.appendChild(el);
+      return { value, pos: (laneMin + laneMax) / 2, dir: 1, laneMin, laneMax, el };
+    });
+    clawRenderPrizes();
+    clearInterval(clawPrizeDriftInterval);
+    clawPrizeDriftInterval = setInterval(() => {
+      clawPrizeStates.forEach(p => {
+        p.pos += p.dir * CLAW_DRIFT_SPEED;
+        if (p.pos >= p.laneMax) { p.pos = p.laneMax; p.dir = -1; }
+        if (p.pos <= p.laneMin) { p.pos = p.laneMin; p.dir = 1; }
+      });
+      clawRenderPrizes();
+    }, 40);
+  }
+
+  function clawRenderPrizes() {
+    clawPrizeStates.forEach(p => {
+      p.el.style.left = p.pos + "%";
+      p.el.style.transform = "translateX(-50%)";
     });
   }
 
@@ -3536,6 +3561,7 @@
     clawMoveDir = dir;
     clearInterval(clawMoveInterval);
     const arm = document.getElementById("claw-arm");
+    arm.style.transition = "none";
     clawMoveInterval = setInterval(() => {
       clawPos += clawMoveDir * CLAW_MOVE_SPEED;
       if (clawPos > 100) clawPos = 100;
@@ -3563,12 +3589,9 @@
     document.getElementById("arcade-coin-balance").textContent = currentCoins;
     await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
 
-    const numPrizes = CLAW_PRIZE_VALUES.length;
-    const zoneWidth = 100 / numPrizes;
     let wonValue = 0;
-    for (let i = 0; i < numPrizes; i++) {
-      const center = zoneWidth * i + zoneWidth / 2;
-      if (Math.abs(clawPos - center) < CLAW_WIN_WINDOW) { wonValue = CLAW_PRIZE_VALUES[i]; break; }
+    for (const p of clawPrizeStates) {
+      if (Math.abs(clawPos - p.pos) < CLAW_WIN_WINDOW) { wonValue = p.value; break; }
     }
 
     const arm = document.getElementById("claw-arm");
@@ -3589,6 +3612,13 @@
     } else {
       document.getElementById("claw-result").textContent = "Missed — try again!";
     }
+
+    // Claw drifts back to the middle before you can move it again.
+    arm.style.transition = "left 0.6s ease-in-out";
+    arm.style.left = "50%";
+    clawPos = 50;
+    await new Promise(r => setTimeout(r, 650));
+    arm.style.transition = "none";
 
     clawBusy = false;
   };
