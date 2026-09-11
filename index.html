@@ -651,7 +651,7 @@
     border: 3px solid #0a2a63;
     border-radius: 16px;
     box-shadow: 0 6px 16px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.15);
-    margin-top: 10px;
+    margin-top: 160px;
   }
 
   .hoop-cabinet-dome {
@@ -802,10 +802,10 @@
 
   .hoop-ball {
     position: absolute;
-    bottom: 20px;
-    left: 137px;
-    width: 48px;
-    height: 48px;
+    bottom: 16px;
+    left: 128px;
+    width: 66px;
+    height: 66px;
     transition: transform 0.5s ease-out, left 0.5s ease-out, bottom 0.5s ease-out, opacity 0.3s ease;
   }
 
@@ -860,93 +860,103 @@
 
   .hoop-arms {
     position: absolute;
-    bottom: 10px;
-    left: 150px;
-    width: 130px;
-    height: 90px;
+    bottom: -6px;
+    left: 90px;
+    width: 200px;
+    height: 70px;
     pointer-events: none;
   }
 
   .arm {
     position: absolute;
-    bottom: 0;
-    width: 14px;
-    height: 55px;
+    bottom: -20px;
+    width: 30px;
+    height: 45px;
     background: linear-gradient(180deg, #d99a6c, #c37f4d);
-    border-radius: 8px;
+    border-radius: 12px 12px 4px 4px;
   }
 
   .arm-left {
-    left: 28px;
+    left: 45px;
     transform-origin: bottom center;
-    transform: rotate(18deg);
+    transform: rotate(10deg);
   }
 
   .arm-right {
-    right: 28px;
+    right: 45px;
     transform-origin: bottom center;
-    transform: rotate(-18deg);
+    transform: rotate(-10deg);
   }
 
   .hand {
     position: absolute;
-    bottom: 48px;
-    width: 22px;
-    height: 24px;
+    bottom: 14px;
+    width: 42px;
+    height: 46px;
     background: linear-gradient(160deg, #e0a878, #c98a5a);
     border-radius: 50% 50% 45% 45%;
-    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.25);
+    box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 3px 5px rgba(0,0,0,0.4);
   }
 
   .hand .thumb {
     position: absolute;
-    width: 10px;
-    height: 10px;
+    width: 18px;
+    height: 18px;
     background: inherit;
     border-radius: 50%;
-    bottom: 4px;
+    bottom: 8px;
   }
 
   .hand-left {
-    left: 20px;
+    left: 32px;
   }
 
   .hand-left .thumb {
-    right: -4px;
+    right: -8px;
   }
 
   .hand-right .thumb {
-    left: -4px;
+    left: -8px;
   }
 
   .hand-right {
-    right: 20px;
+    right: 32px;
   }
 
-  .hoop-arms.charging .arm-left {
-    animation: hoopArmCharge 0.6s ease-in-out infinite alternate;
+  .hoop-arms.charging .hand-left {
+    animation: hoopHandCharge 0.6s ease-in-out infinite alternate;
   }
 
-  .hoop-arms.charging .arm-right {
-    animation: hoopArmChargeR 0.6s ease-in-out infinite alternate;
+  .hoop-arms.charging .hand-right {
+    animation: hoopHandChargeR 0.6s ease-in-out infinite alternate;
   }
 
-  @keyframes hoopArmCharge {
-    0% { transform: rotate(18deg); }
-    100% { transform: rotate(10deg); }
+  @keyframes hoopHandCharge {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-4px) rotate(-4deg); }
   }
 
-  @keyframes hoopArmChargeR {
-    0% { transform: rotate(-18deg); }
-    100% { transform: rotate(-10deg); }
+  @keyframes hoopHandChargeR {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-4px) rotate(4deg); }
   }
 
-  .hoop-arms.releasing .arm-left {
-    animation: hoopArmRelease 0.35s ease-out forwards;
+  .hoop-arms.releasing .hand-left {
+    animation: hoopHandRelease 0.35s ease-out forwards;
   }
 
-  .hoop-arms.releasing .arm-right {
-    animation: hoopArmReleaseR 0.35s ease-out forwards;
+  .hoop-arms.releasing .hand-right {
+    animation: hoopHandReleaseR 0.35s ease-out forwards;
+  }
+
+  @keyframes hoopHandRelease {
+    0% { transform: translateY(-4px) rotate(-4deg); }
+    100% { transform: translateY(-40px) translateX(-15px) rotate(-25deg); }
+  }
+
+  @keyframes hoopHandReleaseR {
+    0% { transform: translateY(-4px) rotate(4deg); }
+    100% { transform: translateY(-40px) translateX(15px) rotate(25deg); }
   }
 
   @keyframes hoopArmRelease {
@@ -972,9 +982,9 @@
   }
 
   @keyframes hoopGrabIn {
-    0% { transform: translate(-90px, 10px) scale(0.5); opacity: 0; }
-    30% { opacity: 1; }
-    70% { transform: translate(0, -6px) scale(1.05); opacity: 1; }
+    0% { transform: translate(0, 60px) scale(0.6); opacity: 0; }
+    35% { opacity: 1; }
+    70% { transform: translate(0, -8px) scale(1.05); opacity: 1; }
     100% { transform: translate(0, 0) scale(1); opacity: 1; }
   }
 
@@ -983,9 +993,9 @@
   }
 
   @keyframes hoopArmsGrabIn {
-    0% { transform: translate(-70px, 20px); opacity: 0.4; }
+    0% { transform: translate(0, 60px); opacity: 0.3; }
     40% { opacity: 1; }
-    70% { transform: translate(0, -6px); }
+    70% { transform: translate(0, -8px); }
     100% { transform: translate(0, 0); opacity: 1; }
   }
 
@@ -1006,20 +1016,20 @@
   }
 
   @keyframes hoopMake {
-    0% { bottom: 20px; left: 137px; transform: scale(1) rotate(0deg); }
-    55% { bottom: 190px; left: 158px; transform: scale(0.85) rotate(200deg); }
-    100% { bottom: 100px; left: 158px; transform: scale(0.6) rotate(380deg); opacity: 1; }
+    0% { bottom: 16px; left: 128px; transform: scale(1) rotate(0deg); }
+    55% { bottom: 190px; left: 150px; transform: scale(0.85) rotate(200deg); }
+    100% { bottom: 100px; left: 150px; transform: scale(0.6) rotate(380deg); opacity: 1; }
   }
 
   @keyframes hoopBrick {
-    0% { bottom: 20px; left: 137px; transform: rotate(0deg); }
-    45% { bottom: 175px; left: 160px; transform: rotate(160deg); }
+    0% { bottom: 16px; left: 128px; transform: rotate(0deg); }
+    45% { bottom: 175px; left: 155px; transform: rotate(160deg); }
     65% { bottom: 100px; left: 190px; transform: rotate(260deg); }
     100% { bottom: 30px; left: 60px; transform: rotate(420deg); }
   }
 
   @keyframes hoopAirball {
-    0% { bottom: 20px; left: 137px; transform: rotate(0deg); }
+    0% { bottom: 16px; left: 128px; transform: rotate(0deg); }
     50% { bottom: 140px; left: 220px; transform: rotate(180deg); }
     100% { bottom: 20px; left: 270px; transform: rotate(360deg); }
   }
@@ -3237,8 +3247,8 @@
     const arms = document.getElementById("hoop-arms");
     ball.classList.remove("shot-made", "shot-brick", "shot-airball", "shot-roll", "grab-in");
     arms.classList.remove("charging", "releasing", "fade-out", "grab-in");
-    ball.style.bottom = "20px";
-    ball.style.left = "137px";
+    ball.style.bottom = "16px";
+    ball.style.left = "128px";
     ball.style.opacity = "1";
     ball.style.transform = "none";
     ball.style.display = "block";
