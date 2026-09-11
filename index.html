@@ -2331,8 +2331,7 @@
   };
 
   const updateLog = [
-    { date: "Sep 11, 2026", text: "Added Favorites, and small changes." }, 
-    { date: "Sep 10, 2026", text: "Site officially opened, Added a Music, Form, Casino, Arcade, Store, and Settings pages, also did some bug fixes." },
+    { date: "Sep 10, 2026", text: "Site officially opened, Added a Music, Form, and Settings pages, also did some bug fixes." },
     { date: "Sep 9, 2026", text: "Added a Movies page." },
     { date: "Sep 8, 2026", text: "Added profile pictures, bios, and clickable profiles in Chat and Friends." },
     { date: "Sep 7, 2026", text: "Added a sign-in popup with Email, Username, Google, and Guest options." },
@@ -3365,7 +3364,6 @@
       ball.classList.add("shot-roll");
       setTimeout(() => {
         ball.style.display = "none";
-        arms.style.display = "none";
         if (hoopActive) hoopSetupNextShot();
       }, 800);
     }, rollDelay);
