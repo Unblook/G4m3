@@ -1745,7 +1745,9 @@
       </div>
       <h2 class="section-title" id="games-favorites-heading" style="display:none;">Favorites</h2>
       <div class="carousel-wrap" id="games-favorites-carousel-wrap" style="display:none; margin-bottom:24px;">
+        <button class="carousel-arrow left" onmousedown="startHoldScroll(-1, 'games-favorites-track')" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(-1, 'games-favorites-track')" ontouchend="stopHoldScroll()">&#10094;</button>
         <div class="carousel-track" id="games-favorites-track" tabindex="0"></div>
+        <button class="carousel-arrow right" onmousedown="startHoldScroll(1, 'games-favorites-track')" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(1, 'games-favorites-track')" ontouchend="stopHoldScroll()">&#10095;</button>
       </div>
       <div class="carousel-wrap" id="games-carousel-wrap">
         <button class="carousel-arrow left" onmousedown="startHoldScroll(-1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(-1)" ontouchend="stopHoldScroll()">&#10094;</button>
@@ -2671,9 +2673,9 @@
   }
 
   let holdScrollInterval = null;
-  window.startHoldScroll = function (direction) {
+  window.startHoldScroll = function (direction, trackId) {
     if (holdScrollInterval) return;
-    const track = document.getElementById("games-track");
+    const track = document.getElementById(trackId || "games-track");
     holdScrollInterval = setInterval(() => {
       track.scrollLeft += direction * 12;
     }, 16);
