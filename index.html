@@ -1133,6 +1133,7 @@
     <!-- MUSIC VIEW -->
     <section id="view-music" class="view">
       <h1 class="hero-title">Music</h1>
+      <p class="update-entry" style="display:inline-block; margin-top:16px;">Go to the Form to add a music artist</p>
     </section>
 
     <!-- FORM VIEW -->
@@ -1230,6 +1231,23 @@
     <!-- MOVIES VIEW -->
     <section id="view-movies" class="view">
       <h1 class="hero-title">Movies</h1>
+      <div class="game-grid" id="movies-grid"></div>
+    </section>
+
+    <!-- MOVIE DETAIL VIEW -->
+    <section id="view-movie-detail" class="view">
+      <button class="detail-back" onclick="showView('movies')">&#8592; Back to movies</button>
+      <div class="detail-layout">
+        <div class="detail-thumb">
+          <span class="thumb-fallback" style="display:flex;">thumbnail</span>
+        </div>
+        <div class="detail-info">
+          <h2 id="movie-detail-title"></h2>
+          <p class="desc" id="movie-detail-desc"></p>
+          <button id="movie-detail-play" class="play-btn" onclick="playTestMovie()">Play</button>
+        </div>
+      </div>
+      <button class="detail-home-btn" onclick="showView('home')">&#8962; Home</button>
     </section>
 
     <!-- PROFILE VIEW -->
@@ -1551,6 +1569,7 @@
   };
 
   const updateLog = [
+    { date: "Sep 10, 2026", text: "Site officially opened, Added a Music, Form, and Settings pages, also did some bug fixes." },
     { date: "Sep 9, 2026", text: "Added a Movies page." },
     { date: "Sep 8, 2026", text: "Added profile pictures, bios, and clickable profiles in Chat and Friends." },
     { date: "Sep 7, 2026", text: "Added a sign-in popup with Email, Username, Google, and Guest options." },
@@ -1840,6 +1859,49 @@
     if (e.key === "ArrowRight") scrollCarousel(1);
   });
 
+  const movies = Array.from({ length: 10 }, (_, i) => ({
+    id: "testmovie" + (i + 1),
+    title: "Test Movie " + (i + 1),
+    desc: "Placeholder movie entry for testing the Movies page."
+  }));
+
+  function renderMovieCard(movie) {
+    const card = document.createElement("div");
+    card.className = "game-card";
+    card.onclick = () => showMovieDetail(movie.id);
+    card.innerHTML = `
+      <div class="thumb">
+        <span class="thumb-fallback" style="display:flex;">thumbnail</span>
+      </div>
+      <h3>${movie.title}</h3>
+    `;
+    return card;
+  }
+
+  function renderMoviesGrid() {
+    const grid = document.getElementById("movies-grid");
+    grid.innerHTML = "";
+    movies.forEach(movie => grid.appendChild(renderMovieCard(movie)));
+  }
+
+  let currentMovieId = null;
+
+  window.showMovieDetail = function (id) {
+    const movie = movies.find(m => m.id === id);
+    if (!movie) return;
+    currentMovieId = id;
+    document.getElementById("movie-detail-title").textContent = movie.title;
+    document.getElementById("movie-detail-desc").textContent = movie.desc;
+    showView("movie-detail");
+  };
+
+  window.playTestMovie = function () {
+    currentGameUrl = "https://example.com";
+    currentGameId = currentMovieId;
+    playEmbeddedGame();
+  };
+
+  renderMoviesGrid();
   renderGenrePills();
   renderGrids();
   renderUpdateLog();
