@@ -1884,13 +1884,6 @@
             </div>
           </div>
 
-          <div class="hoop-arms" id="hoop-arms" style="display:none;">
-            <div class="arm arm-left"></div>
-            <div class="arm arm-right"></div>
-            <div class="hand hand-left"><div class="thumb"></div></div>
-            <div class="hand hand-right"><div class="thumb"></div></div>
-          </div>
-
           <div class="hoop-ball" id="hoop-ball" style="display:none;"></div>
           <div class="hoop-score-popup" id="hoop-score-popup"></div>
         </div>
@@ -3257,19 +3250,14 @@
     document.getElementById("shot-meter-fill").style.width = "0%";
 
     const ball = document.getElementById("hoop-ball");
-    const arms = document.getElementById("hoop-arms");
     ball.classList.remove("shot-made", "shot-brick", "shot-airball", "shot-roll", "grab-in");
-    arms.classList.remove("charging", "releasing", "fade-out", "grab-in");
     ball.style.bottom = "16px";
     ball.style.left = "128px";
     ball.style.opacity = "1";
     ball.style.transform = "none";
     ball.style.display = "block";
-    arms.style.display = "block";
-    arms.style.opacity = "1";
     void ball.offsetWidth;
     ball.classList.add("grab-in");
-    arms.classList.add("grab-in");
 
     // Grabbing a ball from the rack takes about a second.
     setTimeout(() => {
@@ -3281,7 +3269,6 @@
   window.hoopChargeStart = function () {
     if (!hoopActive || hoopCharging || hoopShotResolving) return;
     hoopCharging = true;
-    document.getElementById("hoop-arms").classList.add("charging");
     hoopMeterInterval = setInterval(() => {
       hoopMeterPos += HOOP_METER_SPEED;
       if (hoopMeterPos >= 100) {
@@ -3308,14 +3295,9 @@
     clearInterval(hoopMeterInterval);
 
     const ball = document.getElementById("hoop-ball");
-    const arms = document.getElementById("hoop-arms");
     const rim = document.querySelector(".hoop-rim");
     const net = document.querySelector(".hoop-net");
     const popup = document.getElementById("hoop-score-popup");
-
-    arms.classList.remove("charging", "grab-in");
-    arms.classList.add("releasing");
-    setTimeout(() => arms.classList.add("fade-out"), 300);
 
     const greenEnd = HOOP_GREEN_START + HOOP_GREEN_WIDTH;
     const inGreen = hoopMeterPos >= HOOP_GREEN_START && hoopMeterPos <= greenEnd;
@@ -3393,7 +3375,6 @@
     document.getElementById("shot-meter-track").style.display = "none";
     document.getElementById("hoop-start-btn").style.display = "inline-block";
     document.getElementById("hoop-ball").style.display = "none";
-    document.getElementById("hoop-arms").style.display = "none";
 
     const earned = hoopMakes * HOOP_POINTS_PER_MAKE;
     if (earned > 0 && currentUser) {
