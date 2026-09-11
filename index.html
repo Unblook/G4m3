@@ -557,6 +557,35 @@
     margin-bottom: 8px;
   }
 
+  .bj-cards {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .bj-card {
+    width: 60px;
+    height: 84px;
+    background: #fff;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+    box-shadow: 0 2px 6px #00000088;
+  }
+
+  .bj-card.red { color: #d10000; }
+  .bj-card.black { color: #111; }
+
+  .bj-card.hidden {
+    background: repeating-linear-gradient(45deg, #333, #333 6px, #222 6px, #222 12px);
+    color: transparent;
+  }
+
   /* ---------- Unblocked Youtube view ---------- */
   .yt-steps {
     display: flex;
@@ -1227,13 +1256,23 @@
       <h1 class="hero-title">Casino</h1>
       <p class="profile-line">G4m3 Coins: <span id="casino-coin-balance">0</span></p>
 
-      <h2 class="section-title" style="margin-top:30px;">Blackjack Bot</h2>
-      <p class="desc" style="margin-bottom:16px;">Double or nothing — 50/50 chance.</p>
+      <h2 class="section-title" style="margin-top:30px;">Blackjack</h2>
+      <p class="desc" style="margin-bottom:16px;">Real cards against the dealer bot. Get closer to 21 without going over.</p>
       <div class="auth-box">
         <input type="number" id="blackjack-bet" class="auth-input" placeholder="Amount to bet">
-        <button class="play-btn" onclick="playBlackjack()">Play</button>
-        <p id="blackjack-result" class="profile-line"></p>
+        <button class="play-btn" id="bj-deal-btn" onclick="dealBlackjack()">Deal</button>
       </div>
+      <div id="bj-table" style="display:none; margin-top:20px; max-width:600px;">
+        <p class="auth-heading">Dealer</p>
+        <div id="bj-dealer-cards" class="bj-cards"></div>
+        <p class="auth-heading" style="margin-top:16px;">You</p>
+        <div id="bj-player-cards" class="bj-cards"></div>
+        <div class="auth-btn-row" style="margin-top:16px;">
+          <button class="play-btn" id="bj-hit-btn" onclick="hitBlackjack()">Hit</button>
+          <button class="play-btn" id="bj-stand-btn" onclick="standBlackjack()">Stand</button>
+        </div>
+      </div>
+      <p id="blackjack-result" class="profile-line" style="margin-top:12px;"></p>
 
       <h2 class="section-title" style="margin-top:36px;">Wheel</h2>
       <p class="desc" style="margin-bottom:16px;">Bigger bets have better odds at the big prizes.</p>
@@ -1248,6 +1287,9 @@
       </div>
       <p id="wheel-result" class="profile-line" style="margin-top:16px;"></p>
     </section>
+
+    <!-- ADMIN VIEW (private) -->
+    <section id="view-admin" class="view">
       <h1 class="hero-title">Admin</h1>
       <h2 class="section-title">Broadcast a message</h2>
       <div class="auth-box">
@@ -1663,7 +1705,7 @@
   };
 
   const updateLog = [
-    { date: "Sep 10, 2026", text: "Site officially opened, Added a Music, Form, Store, Casino and Settings pages, also did some bug fixes." },
+    { date: "Sep 10, 2026", text: "Site officially opened, Added a Music, Form, and Settings pages, also did some bug fixes." },
     { date: "Sep 9, 2026", text: "Added a Movies page." },
     { date: "Sep 8, 2026", text: "Added profile pictures, bios, and clickable profiles in Chat and Friends." },
     { date: "Sep 7, 2026", text: "Added a sign-in popup with Email, Username, Google, and Guest options." },
@@ -2172,11 +2214,64 @@
   };
 
   // ---- Casino ----
-  window.playBlackjack = async function () {
+  // ---- Real Blackjack ----
+  const BJ_SUITS = ["♠", "♥", "♦", "♣"];
+  const BJ_RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+  let bjDeck = [];
+  let bjPlayerHand = [];
+  let bjDealerHand = [];
+  let bjBet = 0;
+  let bjActive = false;
+
+  function bjBuildDeck() {
+    const deck = [];
+    for (const suit of BJ_SUITS) {
+      for (const rank of BJ_RANKS) {
+        deck.push({ rank, suit });
+      }
+    }
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
+  }
+
+  function bjCardValue(card) {
+    if (card.rank === "A") return 11;
+    if (["J", "Q", "K"].includes(card.rank)) return 10;
+    return parseInt(card.rank, 10);
+  }
+
+  function bjHandTotal(hand) {
+    let total = hand.reduce((sum, c) => sum + bjCardValue(c), 0);
+    let aces = hand.filter(c => c.rank === "A").length;
+    while (total > 21 && aces > 0) {
+      total -= 10;
+      aces -= 1;
+    }
+    return total;
+  }
+
+  function bjRenderCard(card, hidden) {
+    if (hidden) return '<div class="bj-card hidden">?</div>';
+    const isRed = card.suit === "♥" || card.suit === "♦";
+    return `<div class="bj-card ${isRed ? "red" : "black"}">${card.rank}<br>${card.suit}</div>`;
+  }
+
+  function bjRenderTable(revealDealer) {
+    document.getElementById("bj-dealer-cards").innerHTML = bjDealerHand
+      .map((c, i) => bjRenderCard(c, !revealDealer && i === 1))
+      .join("");
+    document.getElementById("bj-player-cards").innerHTML = bjPlayerHand.map(c => bjRenderCard(c, false)).join("");
+  }
+
+  window.dealBlackjack = async function () {
     if (!currentUser) return;
     const input = document.getElementById("blackjack-bet");
     const bet = parseInt(input.value, 10);
     const resultEl = document.getElementById("blackjack-result");
+    resultEl.textContent = "";
     if (!bet || bet <= 0) {
       resultEl.textContent = "Enter a valid bet amount.";
       return;
@@ -2185,18 +2280,84 @@
       resultEl.textContent = "Not enough coins!";
       return;
     }
+    bjBet = bet;
     currentCoins -= bet;
-    const won = Math.random() < 0.5;
-    if (won) {
-      currentCoins += bet * 2;
-      resultEl.textContent = "You won! +" + bet + " coins.";
-    } else {
-      resultEl.textContent = "You lost " + bet + " coins.";
-    }
     updateCoinDisplay();
     document.getElementById("casino-coin-balance").textContent = currentCoins;
     await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
+
+    bjDeck = bjBuildDeck();
+    bjPlayerHand = [bjDeck.pop(), bjDeck.pop()];
+    bjDealerHand = [bjDeck.pop(), bjDeck.pop()];
+    bjActive = true;
+
+    document.getElementById("bj-table").style.display = "block";
+    document.getElementById("bj-deal-btn").disabled = true;
+    document.getElementById("bj-hit-btn").disabled = false;
+    document.getElementById("bj-stand-btn").disabled = false;
+    bjRenderTable(false);
+
+    if (bjHandTotal(bjPlayerHand) === 21) {
+      await bjFinish("blackjack");
+    }
   };
+
+  window.hitBlackjack = function () {
+    if (!bjActive) return;
+    bjPlayerHand.push(bjDeck.pop());
+    bjRenderTable(false);
+    if (bjHandTotal(bjPlayerHand) > 21) {
+      bjFinish("bust");
+    }
+  };
+
+  window.standBlackjack = async function () {
+    if (!bjActive) return;
+    while (bjHandTotal(bjDealerHand) < 17) {
+      bjDealerHand.push(bjDeck.pop());
+    }
+    await bjFinish("stand");
+  };
+
+  async function bjFinish(reason) {
+    bjActive = false;
+    document.getElementById("bj-hit-btn").disabled = true;
+    document.getElementById("bj-stand-btn").disabled = true;
+    document.getElementById("bj-deal-btn").disabled = false;
+    bjRenderTable(true);
+
+    const playerTotal = bjHandTotal(bjPlayerHand);
+    const dealerTotal = bjHandTotal(bjDealerHand);
+    const resultEl = document.getElementById("blackjack-result");
+    let payout = 0;
+    let message = "";
+
+    if (reason === "bust") {
+      message = "Bust! You lost " + bjBet + " coins.";
+    } else if (reason === "blackjack") {
+      payout = Math.floor(bjBet * 2.5);
+      message = "Blackjack! You won " + (payout - bjBet) + " coins.";
+    } else if (dealerTotal > 21) {
+      payout = bjBet * 2;
+      message = "Dealer busts! You won " + bjBet + " coins.";
+    } else if (playerTotal > dealerTotal) {
+      payout = bjBet * 2;
+      message = "You win! +" + bjBet + " coins.";
+    } else if (playerTotal === dealerTotal) {
+      payout = bjBet;
+      message = "Push — bet returned.";
+    } else {
+      message = "Dealer wins. You lost " + bjBet + " coins.";
+    }
+
+    resultEl.textContent = message;
+    if (payout > 0 && currentUser) {
+      currentCoins += payout;
+      updateCoinDisplay();
+      document.getElementById("casino-coin-balance").textContent = currentCoins;
+      await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
+    }
+  }
 
   // Wheel prize tiers, low-bet distribution vs high-bet distribution — interpolated by bet size.
   const WHEEL_BET_TIERS = [10, 25, 50, 100, 250, 500];
@@ -2848,7 +3009,13 @@
       return;
     }
     content.innerHTML = '<p class="profile-line">Loading users...</p>';
-    const querySnap = await getDocs(collection(db, "users"));
+    let querySnap;
+    try {
+      querySnap = await getDocs(collection(db, "users"));
+    } catch (err) {
+      content.innerHTML = '<p class="profile-line">Error loading users: ' + err.message + '</p>';
+      return;
+    }
     content.innerHTML = "";
     const list = document.createElement("div");
     list.className = "friends-list";
