@@ -92,18 +92,21 @@
     margin-top: 44px;
   }
 
-  #recent-grid {
+  #recent-grid,
+  #favorites-grid {
     margin-bottom: 10px;
     grid-template-columns: repeat(auto-fill, 140px) !important;
     justify-content: start;
     gap: 18px !important;
   }
 
-  #recent-grid .thumb {
+  #recent-grid .thumb,
+  #favorites-grid .thumb {
     aspect-ratio: 4 / 5;
   }
 
-  #recent-grid h3 {
+  #recent-grid h3,
+  #favorites-grid h3 {
     font-size: 14px;
   }
 
@@ -735,81 +738,195 @@
   .hoop-ball {
     position: absolute;
     bottom: 20px;
-    left: 138px;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #ff9a52, #e8590c 55%, #a83c08 100%);
-    box-shadow: inset -6px -6px 10px rgba(0,0,0,0.45), inset 4px 4px 8px rgba(255,255,255,0.25), 0 3px 6px rgba(0,0,0,0.5);
+    left: 137px;
+    width: 48px;
+    height: 48px;
     transition: transform 0.5s ease-out, left 0.5s ease-out, bottom 0.5s ease-out, opacity 0.3s ease;
   }
 
-  .ball-seam {
+  .hoop-ball .ball-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5));
+  }
+
+  .ball-rack {
     position: absolute;
-    background: #3a1a00;
+    bottom: -6px;
+    left: 20px;
+    width: 130px;
+    height: 40px;
+    display: flex;
+    align-items: flex-end;
   }
 
-  .ball-seam-h {
-    top: 50%;
-    left: 6%;
-    right: 6%;
-    height: 2px;
-    transform: translateY(-50%);
+  .rack-ball {
+    width: 30px;
+    height: 30px;
+    margin-left: -8px;
   }
 
-  .ball-seam-v {
-    left: 50%;
-    top: 6%;
-    bottom: 6%;
-    width: 2px;
-    transform: translateX(-50%);
+  .rack-ball:first-child {
+    margin-left: 0;
   }
 
-  .ball-seam-d1 {
-    top: 50%;
-    left: 50%;
-    width: 58%;
-    height: 2px;
-    transform: translate(-50%, -50%) rotate(45deg);
+  .rack-ball .ball-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
   }
 
-  .ball-seam-d2 {
-    top: 50%;
-    left: 50%;
-    width: 58%;
-    height: 2px;
-    transform: translate(-50%, -50%) rotate(-45deg);
+  .hoop-arms {
+    position: absolute;
+    bottom: 10px;
+    left: 100px;
+    width: 130px;
+    height: 90px;
+    pointer-events: none;
+  }
+
+  .arm {
+    position: absolute;
+    bottom: 0;
+    width: 14px;
+    height: 55px;
+    background: linear-gradient(180deg, #d99a6c, #c37f4d);
+    border-radius: 8px;
+  }
+
+  .arm-left {
+    left: 28px;
+    transform-origin: bottom center;
+    transform: rotate(18deg);
+  }
+
+  .arm-right {
+    right: 28px;
+    transform-origin: bottom center;
+    transform: rotate(-18deg);
+  }
+
+  .hand {
+    position: absolute;
+    bottom: 48px;
+    width: 20px;
+    height: 20px;
+    background: #d99a6c;
+    border-radius: 50%;
+  }
+
+  .hand-left {
+    left: 20px;
+  }
+
+  .hand-right {
+    right: 20px;
+  }
+
+  .hoop-arms.charging .arm-left {
+    animation: hoopArmCharge 0.6s ease-in-out infinite alternate;
+  }
+
+  .hoop-arms.charging .arm-right {
+    animation: hoopArmChargeR 0.6s ease-in-out infinite alternate;
+  }
+
+  @keyframes hoopArmCharge {
+    0% { transform: rotate(18deg); }
+    100% { transform: rotate(10deg); }
+  }
+
+  @keyframes hoopArmChargeR {
+    0% { transform: rotate(-18deg); }
+    100% { transform: rotate(-10deg); }
+  }
+
+  .hoop-arms.releasing .arm-left {
+    animation: hoopArmRelease 0.35s ease-out forwards;
+  }
+
+  .hoop-arms.releasing .arm-right {
+    animation: hoopArmReleaseR 0.35s ease-out forwards;
+  }
+
+  @keyframes hoopArmRelease {
+    0% { transform: rotate(10deg); }
+    100% { transform: rotate(-35deg) translateY(-15px); }
+  }
+
+  @keyframes hoopArmReleaseR {
+    0% { transform: rotate(-10deg); }
+    100% { transform: rotate(35deg) translateY(-15px); }
+  }
+
+  .hoop-arms.fade-out {
+    animation: hoopArmsFade 0.4s ease forwards;
+  }
+
+  @keyframes hoopArmsFade {
+    to { opacity: 0; }
   }
 
   .hoop-ball.grab-in {
-    animation: hoopGrabIn 0.4s ease-out;
+    animation: hoopGrabIn 1s ease-out;
   }
 
   @keyframes hoopGrabIn {
-    0% { transform: translateY(50px) scale(0.4); opacity: 0; }
-    65% { transform: translateY(-8px) scale(1.08); opacity: 1; }
-    100% { transform: translateY(0) scale(1); opacity: 1; }
+    0% { transform: translate(-90px, 10px) scale(0.5); opacity: 0; }
+    30% { opacity: 1; }
+    70% { transform: translate(0, -6px) scale(1.05); opacity: 1; }
+    100% { transform: translate(0, 0) scale(1); opacity: 1; }
+  }
+
+  .hoop-arms.grab-in {
+    animation: hoopArmsGrabIn 1s ease-out;
+  }
+
+  @keyframes hoopArmsGrabIn {
+    0% { transform: translate(-70px, 20px); opacity: 0.4; }
+    40% { opacity: 1; }
+    70% { transform: translate(0, -6px); }
+    100% { transform: translate(0, 0); opacity: 1; }
   }
 
   .hoop-ball.shot-made {
     animation: hoopMake 0.7s ease-in forwards;
   }
 
-  .hoop-ball.shot-missed {
-    animation: hoopMiss 0.7s ease-out forwards;
+  .hoop-ball.shot-brick {
+    animation: hoopBrick 0.9s ease-out forwards;
+  }
+
+  .hoop-ball.shot-airball {
+    animation: hoopAirball 0.9s ease-out forwards;
+  }
+
+  .hoop-ball.shot-roll {
+    animation: hoopRoll 0.8s ease-in forwards;
   }
 
   @keyframes hoopMake {
-    0% { bottom: 20px; left: 138px; transform: scale(1) rotate(0deg); }
+    0% { bottom: 20px; left: 137px; transform: scale(1) rotate(0deg); }
     55% { bottom: 190px; left: 158px; transform: scale(0.85) rotate(200deg); }
-    100% { bottom: 95px; left: 158px; transform: scale(0.55) rotate(380deg); opacity: 0; }
+    100% { bottom: 100px; left: 158px; transform: scale(0.6) rotate(380deg); opacity: 1; }
   }
 
-  @keyframes hoopMiss {
-    0% { bottom: 20px; left: 138px; transform: rotate(0deg); }
-    50% { bottom: 170px; left: 178px; transform: rotate(150deg); }
-    75% { bottom: 125px; left: 95px; transform: rotate(280deg); }
-    100% { bottom: 10px; left: 30px; transform: rotate(420deg); opacity: 0; }
+  @keyframes hoopBrick {
+    0% { bottom: 20px; left: 137px; transform: rotate(0deg); }
+    45% { bottom: 175px; left: 160px; transform: rotate(160deg); }
+    65% { bottom: 100px; left: 190px; transform: rotate(260deg); }
+    100% { bottom: 30px; left: 60px; transform: rotate(420deg); }
+  }
+
+  @keyframes hoopAirball {
+    0% { bottom: 20px; left: 137px; transform: rotate(0deg); }
+    50% { bottom: 140px; left: 220px; transform: rotate(180deg); }
+    100% { bottom: 20px; left: 270px; transform: rotate(360deg); }
+  }
+
+  @keyframes hoopRoll {
+    0% { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(720deg) scale(0.65); left: 40px; bottom: 4px; }
   }
 
   .hoop-score-popup {
@@ -1522,13 +1639,13 @@
 
     <!-- GAMES VIEW -->
     <section id="view-games" class="view">
-      <h2 class="section-title" id="games-favorites-heading" style="display:none;">Favorites</h2>
-      <div class="carousel-wrap" id="games-favorites-carousel-wrap" style="display:none; margin-bottom:24px;">
-        <div class="carousel-track" id="games-favorites-track" tabindex="0"></div>
-      </div>
       <div class="games-toolbar">
         <input type="text" id="games-search" class="auth-input games-search-input" placeholder="Search games..." oninput="applyGameFilters()">
         <div class="genre-filters" id="genre-filters"></div>
+      </div>
+      <h2 class="section-title" id="games-favorites-heading" style="display:none;">Favorites</h2>
+      <div class="carousel-wrap" id="games-favorites-carousel-wrap" style="display:none; margin-bottom:24px;">
+        <div class="carousel-track" id="games-favorites-track" tabindex="0"></div>
       </div>
       <div class="carousel-wrap" id="games-carousel-wrap">
         <button class="carousel-arrow left" onmousedown="startHoldScroll(-1)" onmouseup="stopHoldScroll()" onmouseleave="stopHoldScroll()" ontouchstart="startHoldScroll(-1)" ontouchend="stopHoldScroll()">&#10094;</button>
@@ -1638,12 +1755,23 @@
         <div class="hoop-net">
           <div class="hoop-net-lines"></div>
         </div>
-        <div class="hoop-ball" id="hoop-ball" style="display:none;">
-          <div class="ball-seam ball-seam-h"></div>
-          <div class="ball-seam ball-seam-v"></div>
-          <div class="ball-seam ball-seam-d1"></div>
-          <div class="ball-seam ball-seam-d2"></div>
+
+        <div class="ball-rack" id="ball-rack">
+          <div class="rack-ball"></div>
+          <div class="rack-ball"></div>
+          <div class="rack-ball"></div>
+          <div class="rack-ball"></div>
+          <div class="rack-ball"></div>
         </div>
+
+        <div class="hoop-arms" id="hoop-arms" style="display:none;">
+          <div class="arm arm-left"></div>
+          <div class="arm arm-right"></div>
+          <div class="hand hand-left"></div>
+          <div class="hand hand-right"></div>
+        </div>
+
+        <div class="hoop-ball" id="hoop-ball" style="display:none;"></div>
         <div class="hoop-score-popup" id="hoop-score-popup"></div>
       </div>
 
@@ -2123,11 +2251,16 @@
     const nowFav = !favs.includes(id);
     favs = nowFav ? [...favs, id] : favs.filter(f => f !== id);
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+
+    if (starEl) {
+      starEl.classList.toggle("favorited", nowFav);
+      starEl.classList.remove("fav-pop");
+      void starEl.offsetWidth;
+      starEl.classList.add("fav-pop");
+      starEl.addEventListener("animationend", () => starEl.classList.remove("fav-pop"), { once: true });
+    }
     document.querySelectorAll(`.fav-star[onclick*="'${id}'"]`).forEach(el => {
-      el.classList.toggle("favorited", nowFav);
-      el.classList.remove("fav-pop");
-      void el.offsetWidth;
-      el.classList.add("fav-pop");
+      if (el !== starEl) el.classList.toggle("favorited", nowFav);
     });
     renderFavoritesSections();
   };
@@ -2140,11 +2273,11 @@
     const homeHeading = document.getElementById("home-favorites-heading");
     if (homeGrid) {
       homeGrid.innerHTML = "";
+      if (homeHeading) homeHeading.style.display = "block";
       if (favGames.length === 0) {
-        if (homeHeading) homeHeading.style.display = "none";
-        homeGrid.style.display = "none";
+        homeGrid.style.display = "block";
+        homeGrid.innerHTML = '<p class="recent-empty">No favorites yet — click the star on a game to add one!</p>';
       } else {
-        if (homeHeading) homeHeading.style.display = "block";
         homeGrid.style.display = "grid";
         favGames.forEach(g => homeGrid.appendChild(renderCard(g)));
       }
@@ -2155,11 +2288,10 @@
     const gamesHeading = document.getElementById("games-favorites-heading");
     if (gamesTrack) {
       gamesTrack.innerHTML = "";
+      if (gamesHeading) gamesHeading.style.display = "block";
       if (favGames.length === 0) {
-        if (gamesHeading) gamesHeading.style.display = "none";
         if (gamesWrap) gamesWrap.style.display = "none";
       } else {
-        if (gamesHeading) gamesHeading.style.display = "block";
         if (gamesWrap) gamesWrap.style.display = "flex";
         favGames.forEach(g => gamesTrack.appendChild(renderCard(g)));
       }
@@ -2906,9 +3038,30 @@
   const HOOP_ENTRY_COST = 500;
   const HOOP_DURATION = 60;
   const HOOP_POINTS_PER_MAKE = 50;
-  const HOOP_GREEN_START = 80; // fixed, near the end of the meter — precise timing required
-  const HOOP_GREEN_WIDTH = 8;  // fixed, small — real skill test
+  const HOOP_GREEN_START = 91; // fixed, right at the very end of the meter — real precision required
+  const HOOP_GREEN_WIDTH = 6;  // fixed, small
   const HOOP_METER_SPEED = 1.6; // % per tick (16ms ticks) — full traversal in ~1s
+  const HOOP_BRICK_THRESHOLD = 25; // within this % of the green zone edge = brick off the rim; further = airball
+
+  const BALL_SVG = `<svg viewBox="0 0 100 100" class="ball-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="ballGrad" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="#ffab6b"/>
+        <stop offset="55%" stop-color="#e8590c"/>
+        <stop offset="100%" stop-color="#9c3a08"/>
+      </radialGradient>
+    </defs>
+    <circle cx="50" cy="50" r="47" fill="url(#ballGrad)" stroke="#3a1a00" stroke-width="1.5"/>
+    <path d="M3,50 Q50,38 97,50" stroke="#2a1200" stroke-width="2.8" fill="none"/>
+    <path d="M50,3 Q38,50 50,97" stroke="#2a1200" stroke-width="2.8" fill="none"/>
+    <path d="M14,14 Q50,50 14,86" stroke="#2a1200" stroke-width="2.8" fill="none"/>
+    <path d="M86,14 Q50,50 86,86" stroke="#2a1200" stroke-width="2.8" fill="none"/>
+  </svg>`;
+
+  function hoopInitVisuals() {
+    document.querySelectorAll(".rack-ball").forEach(el => { el.innerHTML = BALL_SVG; });
+    document.getElementById("hoop-ball").innerHTML = BALL_SVG;
+  }
 
   let hoopActive = false;
   let hoopTimeLeft = 0;
@@ -2945,7 +3098,8 @@
     greenEl.style.left = HOOP_GREEN_START + "%";
     greenEl.style.width = HOOP_GREEN_WIDTH + "%";
 
-    hoopSetupNextShot(true);
+    hoopInitVisuals();
+    hoopSetupNextShot();
 
     hoopTimerInterval = setInterval(() => {
       hoopTimeLeft -= 1;
@@ -2956,26 +3110,38 @@
     }, 1000);
   };
 
-  function hoopSetupNextShot(firstShot) {
+  function hoopSetupNextShot() {
     hoopMeterPos = 0;
-    hoopShotResolving = false;
+    hoopShotResolving = true; // locked until the ~1s grab animation finishes
     document.getElementById("shot-meter-indicator").style.left = "0%";
     document.getElementById("shot-meter-fill").style.width = "0%";
 
     const ball = document.getElementById("hoop-ball");
-    ball.style.display = "block";
-    ball.classList.remove("shot-made", "shot-missed", "grab-in");
+    const arms = document.getElementById("hoop-arms");
+    ball.classList.remove("shot-made", "shot-brick", "shot-airball", "shot-roll", "grab-in");
+    arms.classList.remove("charging", "releasing", "fade-out", "grab-in");
     ball.style.bottom = "20px";
-    ball.style.left = "138px";
+    ball.style.left = "137px";
     ball.style.opacity = "1";
     ball.style.transform = "none";
+    ball.style.display = "block";
+    arms.style.display = "block";
+    arms.style.opacity = "1";
     void ball.offsetWidth;
     ball.classList.add("grab-in");
+    arms.classList.add("grab-in");
+
+    // Grabbing a ball from the rack takes about a second.
+    setTimeout(() => {
+      if (!hoopActive) return;
+      hoopShotResolving = false;
+    }, 1000);
   }
 
   window.hoopChargeStart = function () {
     if (!hoopActive || hoopCharging || hoopShotResolving) return;
     hoopCharging = true;
+    document.getElementById("hoop-arms").classList.add("charging");
     hoopMeterInterval = setInterval(() => {
       hoopMeterPos += HOOP_METER_SPEED;
       if (hoopMeterPos >= 100) {
@@ -3001,15 +3167,28 @@
     hoopShotResolving = true;
     clearInterval(hoopMeterInterval);
 
-    const inGreen = hoopMeterPos >= HOOP_GREEN_START && hoopMeterPos <= HOOP_GREEN_START + HOOP_GREEN_WIDTH;
     const ball = document.getElementById("hoop-ball");
+    const arms = document.getElementById("hoop-arms");
     const rim = document.querySelector(".hoop-rim");
     const net = document.querySelector(".hoop-net");
     const popup = document.getElementById("hoop-score-popup");
-    ball.classList.remove("grab-in", "shot-made", "shot-missed");
+
+    arms.classList.remove("charging", "grab-in");
+    arms.classList.add("releasing");
+    setTimeout(() => arms.classList.add("fade-out"), 300);
+
+    const greenEnd = HOOP_GREEN_START + HOOP_GREEN_WIDTH;
+    const inGreen = hoopMeterPos >= HOOP_GREEN_START && hoopMeterPos <= greenEnd;
+    const distanceFromGreen = hoopMeterPos < HOOP_GREEN_START
+      ? HOOP_GREEN_START - hoopMeterPos
+      : (hoopMeterPos > greenEnd ? hoopMeterPos - greenEnd : 0);
+
+    ball.classList.remove("grab-in", "shot-made", "shot-brick", "shot-airball");
     void ball.offsetWidth;
 
+    let outcome;
     if (inGreen) {
+      outcome = "swish";
       hoopMakes += 1;
       ball.classList.add("shot-made");
       document.getElementById("hoop-makes").textContent = hoopMakes;
@@ -3018,25 +3197,51 @@
         net.classList.remove("swish");
         void net.offsetWidth;
         net.classList.add("swish");
-        popup.textContent = "+" + HOOP_POINTS_PER_MAKE;
+        popup.textContent = "SWISH! +" + HOOP_POINTS_PER_MAKE;
+        popup.style.color = "#2fae5c";
         popup.classList.remove("pop");
         void popup.offsetWidth;
         popup.classList.add("pop");
       }, 380);
-    } else {
-      ball.classList.add("shot-missed");
+    } else if (distanceFromGreen <= HOOP_BRICK_THRESHOLD) {
+      outcome = "brick";
+      ball.classList.add("shot-brick");
       setTimeout(() => {
         rim.classList.remove("shake");
         void rim.offsetWidth;
         rim.classList.add("shake");
-      }, 300);
+        popup.textContent = "BRICK";
+        popup.style.color = "#ff6b6b";
+        popup.classList.remove("pop");
+        void popup.offsetWidth;
+        popup.classList.add("pop");
+      }, 400);
+    } else {
+      outcome = "airball";
+      ball.classList.add("shot-airball");
+      setTimeout(() => {
+        popup.textContent = "AIRBALL";
+        popup.style.color = "#ff6b6b";
+        popup.classList.remove("pop");
+        void popup.offsetWidth;
+        popup.classList.add("pop");
+      }, 400);
     }
 
+    // Ball rolls back down to the rack area, then a new ball is grabbed.
+    const rollDelay = outcome === "swish" ? 700 : 900;
     setTimeout(() => {
-      ball.classList.remove("shot-made", "shot-missed");
-      ball.style.display = "none";
-      if (hoopActive) hoopSetupNextShot(false);
-    }, 750);
+      ball.classList.remove("shot-made", "shot-brick", "shot-airball");
+      ball.style.bottom = outcome === "airball" ? "20px" : (outcome === "brick" ? "30px" : "100px");
+      ball.style.left = outcome === "airball" ? "270px" : (outcome === "brick" ? "60px" : "158px");
+      void ball.offsetWidth;
+      ball.classList.add("shot-roll");
+      setTimeout(() => {
+        ball.style.display = "none";
+        arms.style.display = "none";
+        if (hoopActive) hoopSetupNextShot();
+      }, 800);
+    }, rollDelay);
   };
 
   async function hoopEndGame() {
@@ -3048,6 +3253,7 @@
     document.getElementById("shot-meter-track").style.display = "none";
     document.getElementById("hoop-start-btn").style.display = "inline-block";
     document.getElementById("hoop-ball").style.display = "none";
+    document.getElementById("hoop-arms").style.display = "none";
 
     const earned = hoopMakes * HOOP_POINTS_PER_MAKE;
     if (earned > 0 && currentUser) {
