@@ -2277,7 +2277,8 @@
     querySnap.forEach(docSnap => {
       const uid = docSnap.id;
       const data = docSnap.data();
-      if (uid === currentUser.uid || !data.username) return;
+      const isUnnamedGuest = !data.username && !data.displayName && data.email === "Guest";
+      if (uid === currentUser.uid || isUnnamedGuest) return;
       const row = document.createElement("div");
       row.className = "account-row";
       const avatarHtml = data.photo
@@ -2285,7 +2286,7 @@
         : `<div class="avatar-small-fallback">?</div>`;
       const alreadyFriend = myFriends.includes(uid);
       const alreadyRequested = (data.incomingRequests || []).includes(currentUser.uid);
-      const displayName = data.displayName || data.username;
+      const displayName = displayLabelFor(data);
       let btnLabel = "Add";
       let btnDisabled = "";
       if (alreadyFriend) { btnLabel = "Friends"; btnDisabled = "disabled"; }
