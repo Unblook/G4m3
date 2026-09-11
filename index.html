@@ -1129,6 +1129,35 @@
     box-shadow: inset -3px -3px 5px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.4);
   }
 
+  .claw-prize-box {
+    width: 40px;
+    height: 32px;
+    background: linear-gradient(180deg, #c98a44, #a86a28);
+    border: 2px solid #7a4d18;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    box-shadow: inset -3px -3px 5px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.4);
+  }
+
+  .claw-joystick-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+  }
+
+  .claw-joystick-stick {
+    font-size: 28px;
+    color: #ccc;
+  }
+
   .shot-meter-track {
     position: relative;
     width: 300px;
@@ -1984,6 +2013,12 @@
           </div>
           <div class="claw-prizes" id="claw-prizes"></div>
         </div>
+      </div>
+
+      <div class="claw-joystick-row">
+        <button class="carousel-arrow" onmousedown="clawMoveStart(-1)" onmouseup="clawMoveStop()" onmouseleave="clawMoveStop()" ontouchstart="clawMoveStart(-1)" ontouchend="clawMoveStop()">&#9664;</button>
+        <div class="claw-joystick-stick">&#9673;</div>
+        <button class="carousel-arrow" onmousedown="clawMoveStart(1)" onmouseup="clawMoveStop()" onmouseleave="clawMoveStop()" ontouchstart="clawMoveStart(1)" ontouchend="clawMoveStop()">&#9654;</button>
       </div>
 
       <div class="hoop-cabinet-panel auth-btn-row" style="margin-top:16px; width:320px;">
@@ -3476,37 +3511,43 @@
 
   // ---- Arcade: Claw Machine ----
   const CLAW_ENTRY_COST = 100;
-  const CLAW_WIN_REWARD = 300;
-  const CLAW_WIN_WINDOW = 6; // % — how close to a prize's center counts as a win
-  const CLAW_PRIZE_COLORS = ["#ff5f6d", "#2193b0", "#7b2ff7", "#f7971e", "#2fae5c"];
+  const CLAW_WIN_WINDOW = 2.5; // % — very tight, real precision required
+  const CLAW_MOVE_SPEED = 0.9; // % per tick while holding the joystick
+  const CLAW_PRIZE_VALUES = [1000, 250, 750, 100, 500];
 
   let clawPos = 0;
-  let clawDir = 1;
+  let clawMoveDir = 0;
   let clawMoveInterval = null;
   let clawBusy = false;
 
   function clawInit() {
     const prizesEl = document.getElementById("claw-prizes");
     prizesEl.innerHTML = "";
-    CLAW_PRIZE_COLORS.forEach(color => {
+    CLAW_PRIZE_VALUES.forEach(value => {
       const p = document.createElement("div");
-      p.className = "claw-prize";
-      p.style.background = color;
+      p.className = "claw-prize-box";
+      p.textContent = value;
       prizesEl.appendChild(p);
     });
-    clawStartMoving();
   }
 
-  function clawStartMoving() {
+  window.clawMoveStart = function (dir) {
+    if (clawBusy) return;
+    clawMoveDir = dir;
     clearInterval(clawMoveInterval);
     const arm = document.getElementById("claw-arm");
     clawMoveInterval = setInterval(() => {
-      clawPos += clawDir * 1.6;
-      if (clawPos >= 100) { clawPos = 100; clawDir = -1; }
-      if (clawPos <= 0) { clawPos = 0; clawDir = 1; }
+      clawPos += clawMoveDir * CLAW_MOVE_SPEED;
+      if (clawPos > 100) clawPos = 100;
+      if (clawPos < 0) clawPos = 0;
       arm.style.left = clawPos + "%";
-    }, 30);
-  }
+    }, 16);
+  };
+
+  window.clawMoveStop = function () {
+    clearInterval(clawMoveInterval);
+    clawMoveInterval = null;
+  };
 
   window.clawDrop = async function () {
     if (clawBusy || !currentUser) return;
@@ -3522,12 +3563,12 @@
     document.getElementById("arcade-coin-balance").textContent = currentCoins;
     await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
 
-    const numPrizes = CLAW_PRIZE_COLORS.length;
+    const numPrizes = CLAW_PRIZE_VALUES.length;
     const zoneWidth = 100 / numPrizes;
-    let won = false;
+    let wonValue = 0;
     for (let i = 0; i < numPrizes; i++) {
       const center = zoneWidth * i + zoneWidth / 2;
-      if (Math.abs(clawPos - center) < CLAW_WIN_WINDOW) { won = true; break; }
+      if (Math.abs(clawPos - center) < CLAW_WIN_WINDOW) { wonValue = CLAW_PRIZE_VALUES[i]; break; }
     }
 
     const arm = document.getElementById("claw-arm");
@@ -3539,18 +3580,17 @@
     await new Promise(r => setTimeout(r, 450));
     arm.style.transition = "none";
 
-    if (won) {
-      currentCoins += CLAW_WIN_REWARD;
+    if (wonValue > 0) {
+      currentCoins += wonValue;
       updateCoinDisplay();
       document.getElementById("arcade-coin-balance").textContent = currentCoins;
       await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
-      document.getElementById("claw-result").textContent = "Got one! +" + CLAW_WIN_REWARD + " coins!";
+      document.getElementById("claw-result").textContent = "Got it! +" + wonValue + " coins!";
     } else {
       document.getElementById("claw-result").textContent = "Missed — try again!";
     }
 
     clawBusy = false;
-    clawStartMoving();
   };
 
   window.spinWheel = async function (bet) {
