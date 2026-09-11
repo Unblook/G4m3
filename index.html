@@ -643,11 +643,76 @@
     margin-bottom: 8px;
   }
 
+  .hoop-cabinet {
+    position: relative;
+    width: 360px;
+    padding: 46px 20px 16px 20px;
+    background: linear-gradient(180deg, #1c4fa8, #123a82);
+    border: 3px solid #0a2a63;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.15);
+    margin-top: 10px;
+  }
+
+  .hoop-cabinet-dome {
+    position: absolute;
+    top: -34px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 68px;
+    background: linear-gradient(180deg, #2a63c9, #1c4fa8);
+    border: 3px solid #0a2a63;
+    border-radius: 110px 110px 0 0;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.4);
+    z-index: 1;
+  }
+
+  .hoop-cabinet-mesh {
+    position: absolute;
+    top: -140px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 260px;
+    height: 150px;
+    border-radius: 130px 130px 0 0;
+    background:
+      repeating-linear-gradient(60deg, rgba(200,210,225,0.55) 0 1.5px, transparent 1.5px 13px),
+      repeating-linear-gradient(-60deg, rgba(200,210,225,0.55) 0 1.5px, transparent 1.5px 13px);
+    border: 3px solid #0a2a63;
+    border-bottom: none;
+    z-index: 0;
+  }
+
+  .hoop-cabinet-rail {
+    position: absolute;
+    bottom: 0;
+    width: 14px;
+    height: 100%;
+    background: linear-gradient(90deg, #0a2a63, #1c4fa8, #0a2a63);
+    border-radius: 6px;
+  }
+
+  .hoop-cabinet-rail.left {
+    left: -6px;
+  }
+
+  .hoop-cabinet-rail.right {
+    right: -6px;
+  }
+
+  .hoop-cabinet-panel {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: linear-gradient(180deg, #14346f, #0a2354);
+    border: 2px solid #0a2a63;
+    border-radius: 8px;
+  }
+
   .hoop-arena {
     position: relative;
     width: 320px;
     height: 320px;
-    margin-top: 10px;
   }
 
   .hoop-backboard {
@@ -752,18 +817,35 @@
 
   .ball-rack {
     position: absolute;
-    bottom: -6px;
-    left: 20px;
-    width: 130px;
-    height: 40px;
+    bottom: -8px;
+    left: 6px;
+    width: 108px;
+    height: 44px;
+  }
+
+  .rack-shelf {
+    position: absolute;
+    bottom: 0;
+    left: -4px;
+    width: 116px;
+    height: 10px;
+    background: linear-gradient(180deg, #333, #111);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+  }
+
+  .rack-balls {
+    position: absolute;
+    bottom: 8px;
+    left: 0;
     display: flex;
     align-items: flex-end;
   }
 
   .rack-ball {
-    width: 30px;
-    height: 30px;
-    margin-left: -8px;
+    width: 26px;
+    height: 26px;
+    margin-left: -7px;
   }
 
   .rack-ball:first-child {
@@ -779,7 +861,7 @@
   .hoop-arms {
     position: absolute;
     bottom: 10px;
-    left: 100px;
+    left: 150px;
     width: 130px;
     height: 90px;
     pointer-events: none;
@@ -809,14 +891,32 @@
   .hand {
     position: absolute;
     bottom: 48px;
-    width: 20px;
-    height: 20px;
-    background: #d99a6c;
+    width: 22px;
+    height: 24px;
+    background: linear-gradient(160deg, #e0a878, #c98a5a);
+    border-radius: 50% 50% 45% 45%;
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.25);
+  }
+
+  .hand .thumb {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: inherit;
     border-radius: 50%;
+    bottom: 4px;
   }
 
   .hand-left {
     left: 20px;
+  }
+
+  .hand-left .thumb {
+    right: -4px;
+  }
+
+  .hand-right .thumb {
+    left: -4px;
   }
 
   .hand-right {
@@ -1746,33 +1846,42 @@
       <h2 class="section-title" style="margin-top:30px;">Basketball Hoop</h2>
       <p class="desc" style="margin-bottom:16px;">500 coins for 60 seconds. Hold the ball and release right as the meter hits the green zone. Each make is worth 50 coins.</p>
 
-      <div class="hoop-arena">
-        <div class="hoop-backboard">
-          <div class="hoop-timer" id="hoop-timer">60</div>
-          <div class="hoop-square"></div>
-        </div>
-        <div class="hoop-rim"></div>
-        <div class="hoop-net">
-          <div class="hoop-net-lines"></div>
-        </div>
+      <div class="hoop-cabinet">
+        <div class="hoop-cabinet-mesh"></div>
+        <div class="hoop-cabinet-dome"></div>
+        <div class="hoop-cabinet-rail left"></div>
+        <div class="hoop-cabinet-rail right"></div>
+        <div class="hoop-arena">
+          <div class="hoop-backboard">
+            <div class="hoop-timer" id="hoop-timer">60</div>
+            <div class="hoop-square"></div>
+          </div>
+          <div class="hoop-rim"></div>
+          <div class="hoop-net">
+            <div class="hoop-net-lines"></div>
+          </div>
 
-        <div class="ball-rack" id="ball-rack">
-          <div class="rack-ball"></div>
-          <div class="rack-ball"></div>
-          <div class="rack-ball"></div>
-          <div class="rack-ball"></div>
-          <div class="rack-ball"></div>
-        </div>
+          <div class="ball-rack" id="ball-rack">
+            <div class="rack-shelf"></div>
+            <div class="rack-balls">
+              <div class="rack-ball"></div>
+              <div class="rack-ball"></div>
+              <div class="rack-ball"></div>
+              <div class="rack-ball"></div>
+              <div class="rack-ball"></div>
+            </div>
+          </div>
 
-        <div class="hoop-arms" id="hoop-arms" style="display:none;">
-          <div class="arm arm-left"></div>
-          <div class="arm arm-right"></div>
-          <div class="hand hand-left"></div>
-          <div class="hand hand-right"></div>
-        </div>
+          <div class="hoop-arms" id="hoop-arms" style="display:none;">
+            <div class="arm arm-left"></div>
+            <div class="arm arm-right"></div>
+            <div class="hand hand-left"><div class="thumb"></div></div>
+            <div class="hand hand-right"><div class="thumb"></div></div>
+          </div>
 
-        <div class="hoop-ball" id="hoop-ball" style="display:none;"></div>
-        <div class="hoop-score-popup" id="hoop-score-popup"></div>
+          <div class="hoop-ball" id="hoop-ball" style="display:none;"></div>
+          <div class="hoop-score-popup" id="hoop-score-popup"></div>
+        </div>
       </div>
 
       <div class="shot-meter-track" id="shot-meter-track" style="display:none;">
@@ -1781,7 +1890,7 @@
         <div class="shot-meter-indicator" id="shot-meter-indicator"></div>
       </div>
 
-      <div class="auth-btn-row" style="margin-top:16px;">
+      <div class="hoop-cabinet-panel auth-btn-row" style="margin-top:16px;">
         <button class="play-btn" id="hoop-start-btn" onclick="startHoopGame()">Play (500 coins)</button>
         <button class="play-btn" id="hoop-shoot-btn" style="display:none;" onmousedown="hoopChargeStart()" onmouseup="hoopRelease()" onmouseleave="hoopReleaseIfCharging()" ontouchstart="hoopChargeStart()" ontouchend="hoopRelease()">Hold to Shoot</button>
       </div>
@@ -3038,7 +3147,7 @@
   const HOOP_ENTRY_COST = 500;
   const HOOP_DURATION = 60;
   const HOOP_POINTS_PER_MAKE = 50;
-  const HOOP_GREEN_START = 91; // fixed, right at the very end of the meter — real precision required
+  const HOOP_GREEN_START = 94; // fixed, ends exactly at 100 — the true very end of the meter
   const HOOP_GREEN_WIDTH = 6;  // fixed, small
   const HOOP_METER_SPEED = 1.6; // % per tick (16ms ticks) — full traversal in ~1s
   const HOOP_BRICK_THRESHOLD = 25; // within this % of the green zone edge = brick off the rim; further = airball
