@@ -1821,9 +1821,9 @@
         <button class="play-btn" id="bj-deal-btn" onclick="dealBlackjack()">Deal</button>
       </div>
       <div id="bj-table" style="display:none; margin-top:20px; max-width:600px;">
-        <p class="auth-heading">Dealer</p>
+        <p class="auth-heading">Dealer <span id="bj-dealer-total"></span></p>
         <div id="bj-dealer-cards" class="bj-cards"></div>
-        <p class="auth-heading" style="margin-top:16px;">You</p>
+        <p class="auth-heading" style="margin-top:16px;">You <span id="bj-player-total"></span></p>
         <div id="bj-player-cards" class="bj-cards"></div>
         <div class="auth-btn-row" style="margin-top:16px;">
           <button class="play-btn" id="bj-hit-btn" onclick="hitBlackjack()">Hit</button>
@@ -2968,6 +2968,13 @@
       .map((c, i) => bjRenderCard(c, !revealDealer && i === 1))
       .join("");
     document.getElementById("bj-player-cards").innerHTML = bjPlayerHand.map(c => bjRenderCard(c, false)).join("");
+    bjUpdateTotals(revealDealer);
+  }
+
+  function bjUpdateTotals(revealDealer) {
+    document.getElementById("bj-player-total").textContent = ": " + bjHandTotal(bjPlayerHand);
+    const dealerVisible = revealDealer ? bjDealerHand : bjDealerHand.slice(0, 1);
+    document.getElementById("bj-dealer-total").textContent = ": " + bjHandTotal(dealerVisible);
   }
 
   function bjDelay(ms) {
@@ -3016,12 +3023,16 @@
     document.getElementById("bj-stand-btn").disabled = true;
 
     const c1 = bjDeck.pop(); bjPlayerHand.push(c1); bjAppendCard("bj-player-cards", c1, false);
+    bjUpdateTotals(false);
     await bjDelay(350);
     const c2 = bjDeck.pop(); bjDealerHand.push(c2); bjAppendCard("bj-dealer-cards", c2, false);
+    bjUpdateTotals(false);
     await bjDelay(350);
     const c3 = bjDeck.pop(); bjPlayerHand.push(c3); bjAppendCard("bj-player-cards", c3, false);
+    bjUpdateTotals(false);
     await bjDelay(350);
     const c4 = bjDeck.pop(); bjDealerHand.push(c4); bjAppendCard("bj-dealer-cards", c4, true);
+    bjUpdateTotals(false);
     await bjDelay(350);
 
     document.getElementById("bj-hit-btn").disabled = false;
@@ -3037,6 +3048,7 @@
     const card = bjDeck.pop();
     bjPlayerHand.push(card);
     bjAppendCard("bj-player-cards", card, false);
+    bjUpdateTotals(false);
     if (bjHandTotal(bjPlayerHand) > 21) {
       bjFinish("bust");
     }
@@ -3057,6 +3069,7 @@
       const card = bjDeck.pop();
       bjDealerHand.push(card);
       bjAppendCard("bj-dealer-cards", card, false);
+      bjUpdateTotals(true);
     }
     await bjFinish("stand");
   };
