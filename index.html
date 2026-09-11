@@ -586,6 +586,15 @@
     color: transparent;
   }
 
+  @keyframes bjDealIn {
+    from { transform: translateY(-50px) scale(0.6); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .bj-card.dealt-in {
+    animation: bjDealIn 0.35s ease-out;
+  }
+
   /* ---------- Unblocked Youtube view ---------- */
   .yt-steps {
     display: flex;
@@ -2266,6 +2275,19 @@
     document.getElementById("bj-player-cards").innerHTML = bjPlayerHand.map(c => bjRenderCard(c, false)).join("");
   }
 
+  function bjDelay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function bjAppendCard(containerId, card, hidden) {
+    const container = document.getElementById(containerId);
+    const div = document.createElement("div");
+    const isRed = !hidden && (card.suit === "♥" || card.suit === "♦");
+    div.className = "bj-card dealt-in " + (hidden ? "hidden" : (isRed ? "red" : "black"));
+    div.innerHTML = hidden ? "?" : `${card.rank}<br>${card.suit}`;
+    container.appendChild(div);
+  }
+
   window.dealBlackjack = async function () {
     if (!currentUser) return;
     const input = document.getElementById("blackjack-bet");
@@ -2287,15 +2309,28 @@
     await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
 
     bjDeck = bjBuildDeck();
-    bjPlayerHand = [bjDeck.pop(), bjDeck.pop()];
-    bjDealerHand = [bjDeck.pop(), bjDeck.pop()];
+    bjPlayerHand = [];
+    bjDealerHand = [];
     bjActive = true;
 
     document.getElementById("bj-table").style.display = "block";
+    document.getElementById("bj-dealer-cards").innerHTML = "";
+    document.getElementById("bj-player-cards").innerHTML = "";
     document.getElementById("bj-deal-btn").disabled = true;
+    document.getElementById("bj-hit-btn").disabled = true;
+    document.getElementById("bj-stand-btn").disabled = true;
+
+    const c1 = bjDeck.pop(); bjPlayerHand.push(c1); bjAppendCard("bj-player-cards", c1, false);
+    await bjDelay(350);
+    const c2 = bjDeck.pop(); bjDealerHand.push(c2); bjAppendCard("bj-dealer-cards", c2, false);
+    await bjDelay(350);
+    const c3 = bjDeck.pop(); bjPlayerHand.push(c3); bjAppendCard("bj-player-cards", c3, false);
+    await bjDelay(350);
+    const c4 = bjDeck.pop(); bjDealerHand.push(c4); bjAppendCard("bj-dealer-cards", c4, true);
+    await bjDelay(350);
+
     document.getElementById("bj-hit-btn").disabled = false;
     document.getElementById("bj-stand-btn").disabled = false;
-    bjRenderTable(false);
 
     if (bjHandTotal(bjPlayerHand) === 21) {
       await bjFinish("blackjack");
@@ -2304,8 +2339,9 @@
 
   window.hitBlackjack = function () {
     if (!bjActive) return;
-    bjPlayerHand.push(bjDeck.pop());
-    bjRenderTable(false);
+    const card = bjDeck.pop();
+    bjPlayerHand.push(card);
+    bjAppendCard("bj-player-cards", card, false);
     if (bjHandTotal(bjPlayerHand) > 21) {
       bjFinish("bust");
     }
@@ -2313,8 +2349,19 @@
 
   window.standBlackjack = async function () {
     if (!bjActive) return;
+    bjActive = false;
+    document.getElementById("bj-hit-btn").disabled = true;
+    document.getElementById("bj-stand-btn").disabled = true;
+
+    // Reveal the dealer's hidden card
+    bjRenderTable(true);
+    await bjDelay(400);
+
     while (bjHandTotal(bjDealerHand) < 17) {
-      bjDealerHand.push(bjDeck.pop());
+      await bjDelay(500);
+      const card = bjDeck.pop();
+      bjDealerHand.push(card);
+      bjAppendCard("bj-dealer-cards", card, false);
     }
     await bjFinish("stand");
   };
