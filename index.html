@@ -1231,23 +1231,7 @@
     <!-- MOVIES VIEW -->
     <section id="view-movies" class="view">
       <h1 class="hero-title">Movies</h1>
-      <div class="game-grid" id="movies-grid"></div>
-    </section>
-
-    <!-- MOVIE DETAIL VIEW -->
-    <section id="view-movie-detail" class="view">
-      <button class="detail-back" onclick="showView('movies')">&#8592; Back to movies</button>
-      <div class="detail-layout">
-        <div class="detail-thumb">
-          <span class="thumb-fallback" style="display:flex;">thumbnail</span>
-        </div>
-        <div class="detail-info">
-          <h2 id="movie-detail-title"></h2>
-          <p class="desc" id="movie-detail-desc"></p>
-          <button id="movie-detail-play" class="play-btn" onclick="playTestMovie()">Play</button>
-        </div>
-      </div>
-      <button class="detail-home-btn" onclick="showView('home')">&#8962; Home</button>
+      <p class="update-entry" style="display:inline-block; margin-top:16px;">Go to the Form and put a movie you want on the site</p>
     </section>
 
     <!-- PROFILE VIEW -->
@@ -1859,49 +1843,6 @@
     if (e.key === "ArrowRight") scrollCarousel(1);
   });
 
-  const movies = Array.from({ length: 10 }, (_, i) => ({
-    id: "testmovie" + (i + 1),
-    title: "Test Movie " + (i + 1),
-    desc: "Placeholder movie entry for testing the Movies page."
-  }));
-
-  function renderMovieCard(movie) {
-    const card = document.createElement("div");
-    card.className = "game-card";
-    card.onclick = () => showMovieDetail(movie.id);
-    card.innerHTML = `
-      <div class="thumb">
-        <span class="thumb-fallback" style="display:flex;">thumbnail</span>
-      </div>
-      <h3>${movie.title}</h3>
-    `;
-    return card;
-  }
-
-  function renderMoviesGrid() {
-    const grid = document.getElementById("movies-grid");
-    grid.innerHTML = "";
-    movies.forEach(movie => grid.appendChild(renderMovieCard(movie)));
-  }
-
-  let currentMovieId = null;
-
-  window.showMovieDetail = function (id) {
-    const movie = movies.find(m => m.id === id);
-    if (!movie) return;
-    currentMovieId = id;
-    document.getElementById("movie-detail-title").textContent = movie.title;
-    document.getElementById("movie-detail-desc").textContent = movie.desc;
-    showView("movie-detail");
-  };
-
-  window.playTestMovie = function () {
-    currentGameUrl = "https://example.com";
-    currentGameId = currentMovieId;
-    playEmbeddedGame();
-  };
-
-  renderMoviesGrid();
   renderGenrePills();
   renderGrids();
   renderUpdateLog();
