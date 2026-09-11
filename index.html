@@ -12,24 +12,27 @@
     color: #fff;
     font-family: "Comic Sans MS", "Comic Sans", cursive;
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
   }
 
-  /* ---------- Sidebar ---------- */
+  /* ---------- Top nav bar ---------- */
   .sidebar {
-    width: 180px;
+    width: 100%;
     flex-shrink: 0;
     background: #050505;
-    border-right: 2px solid #ffffff22;
-    padding: 30px 0;
+    border-bottom: 2px solid #ffffff22;
+    padding: 12px 20px;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
   }
 
   .sidebar .logo {
-    font-size: 22px;
-    padding: 0 20px 20px 20px;
+    font-size: 20px;
+    padding: 0 20px 0 0;
     letter-spacing: 1px;
   }
 
@@ -38,12 +41,13 @@
     border: none;
     color: #aaa;
     font-family: inherit;
-    font-size: 17px;
+    font-size: 15px;
     text-align: left;
-    padding: 14px 20px;
+    padding: 8px 12px;
     cursor: pointer;
     transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-    border-left: 3px solid transparent;
+    border-bottom: 3px solid transparent;
+    border-radius: 6px 6px 0 0;
   }
 
   .nav-btn:hover {
@@ -53,7 +57,7 @@
   .nav-btn.active {
     color: #fff;
     background: #ffffff0d;
-    border-left: 3px solid #fff;
+    border-bottom: 3px solid #fff;
     box-shadow: inset 0 0 12px #ffffff22;
   }
 
@@ -208,6 +212,47 @@
     display: none;
     align-items: center;
     justify-content: center;
+  }
+
+  .fav-star {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 3;
+    background: #000000aa;
+    border: 2px solid #888;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    color: #000;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+
+  .fav-star:hover {
+    border-color: #fff;
+  }
+
+  .fav-star.favorited {
+    background: #000;
+    border-color: #ffd700;
+    color: #ffd700;
+  }
+
+  @keyframes favPop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.5) rotate(-15deg); }
+    70% { transform: scale(0.85) rotate(8deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  .fav-star.fav-pop {
+    animation: favPop 0.4s ease;
   }
 
   .game-card h3 {
@@ -598,7 +643,7 @@
   .hoop-arena {
     position: relative;
     width: 320px;
-    height: 260px;
+    height: 320px;
     margin-top: 10px;
   }
 
@@ -607,10 +652,11 @@
     top: 0;
     left: 60px;
     width: 200px;
-    height: 100px;
-    background: #eee;
-    border: 4px solid #ccc;
-    border-radius: 6px;
+    height: 90px;
+    background: linear-gradient(180deg, #f5f5f0, #dcdcd4);
+    border: 3px solid #999;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -618,59 +664,173 @@
 
   .hoop-timer {
     color: #111;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: bold;
-    margin-top: 8px;
+    margin-top: 6px;
+  }
+
+  .hoop-square {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 38px;
+    border: 3px solid #c0392b;
   }
 
   .hoop-rim {
     position: absolute;
-    top: 96px;
+    top: 88px;
     left: 130px;
-    width: 60px;
-    height: 14px;
-    border: 4px solid #ff5500;
+    width: 62px;
+    height: 16px;
     border-radius: 50%;
-    background: transparent;
+    border: 5px solid #ff5500;
+    box-shadow: 0 3px 4px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.35);
+    transition: transform 0.1s ease;
+  }
+
+  .hoop-rim.shake {
+    animation: hoopRimShake 0.4s ease;
+  }
+
+  @keyframes hoopRimShake {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    25% { transform: translateX(-4px) rotate(-3deg); }
+    50% { transform: translateX(4px) rotate(3deg); }
+    75% { transform: translateX(-2px) rotate(-1deg); }
   }
 
   .hoop-net {
     position: absolute;
-    top: 106px;
-    left: 145px;
-    width: 30px;
-    height: 40px;
-    background: repeating-linear-gradient(90deg, #fff 0 2px, transparent 2px 8px);
-    clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
-    opacity: 0.7;
+    top: 100px;
+    left: 141px;
+    width: 40px;
+    height: 50px;
+    clip-path: polygon(5% 0, 95% 0, 78% 100%, 22% 100%);
+    overflow: hidden;
+  }
+
+  .hoop-net.swish {
+    animation: hoopNetSwish 0.5s ease;
+  }
+
+  @keyframes hoopNetSwish {
+    0% { transform: skewX(0) scaleY(1); }
+    30% { transform: skewX(9deg) scaleY(1.12); }
+    60% { transform: skewX(-6deg) scaleY(1.05); }
+    100% { transform: skewX(0) scaleY(1); }
+  }
+
+  .hoop-net-lines {
+    width: 100%;
+    height: 100%;
+    background:
+      repeating-linear-gradient(70deg, #fff 0 1.5px, transparent 1.5px 9px),
+      repeating-linear-gradient(-70deg, #fff 0 1.5px, transparent 1.5px 9px);
+    opacity: 0.55;
   }
 
   .hoop-ball {
     position: absolute;
-    bottom: 0;
-    left: 130px;
-    font-size: 44px;
+    bottom: 20px;
+    left: 138px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff9a52, #e8590c 55%, #a83c08 100%);
+    box-shadow: inset -6px -6px 10px rgba(0,0,0,0.45), inset 4px 4px 8px rgba(255,255,255,0.25), 0 3px 6px rgba(0,0,0,0.5);
     transition: transform 0.5s ease-out, left 0.5s ease-out, bottom 0.5s ease-out, opacity 0.3s ease;
   }
 
+  .ball-seam {
+    position: absolute;
+    background: #3a1a00;
+  }
+
+  .ball-seam-h {
+    top: 50%;
+    left: 6%;
+    right: 6%;
+    height: 2px;
+    transform: translateY(-50%);
+  }
+
+  .ball-seam-v {
+    left: 50%;
+    top: 6%;
+    bottom: 6%;
+    width: 2px;
+    transform: translateX(-50%);
+  }
+
+  .ball-seam-d1 {
+    top: 50%;
+    left: 50%;
+    width: 58%;
+    height: 2px;
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .ball-seam-d2 {
+    top: 50%;
+    left: 50%;
+    width: 58%;
+    height: 2px;
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .hoop-ball.grab-in {
+    animation: hoopGrabIn 0.4s ease-out;
+  }
+
+  @keyframes hoopGrabIn {
+    0% { transform: translateY(50px) scale(0.4); opacity: 0; }
+    65% { transform: translateY(-8px) scale(1.08); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
   .hoop-ball.shot-made {
-    animation: hoopMake 0.6s ease-out forwards;
+    animation: hoopMake 0.7s ease-in forwards;
   }
 
   .hoop-ball.shot-missed {
-    animation: hoopMiss 0.6s ease-out forwards;
+    animation: hoopMiss 0.7s ease-out forwards;
   }
 
   @keyframes hoopMake {
-    0% { bottom: 0; left: 130px; transform: scale(1); }
-    60% { bottom: 150px; left: 155px; transform: scale(0.8); }
-    100% { bottom: 100px; left: 155px; transform: scale(0.5); opacity: 0; }
+    0% { bottom: 20px; left: 138px; transform: scale(1) rotate(0deg); }
+    55% { bottom: 190px; left: 158px; transform: scale(0.85) rotate(200deg); }
+    100% { bottom: 95px; left: 158px; transform: scale(0.55) rotate(380deg); opacity: 0; }
   }
 
   @keyframes hoopMiss {
-    0% { bottom: 0; left: 130px; transform: rotate(0deg); }
-    50% { bottom: 130px; left: 90px; transform: rotate(120deg); }
-    100% { bottom: 20px; left: 40px; transform: rotate(240deg); opacity: 0; }
+    0% { bottom: 20px; left: 138px; transform: rotate(0deg); }
+    50% { bottom: 170px; left: 178px; transform: rotate(150deg); }
+    75% { bottom: 125px; left: 95px; transform: rotate(280deg); }
+    100% { bottom: 10px; left: 30px; transform: rotate(420deg); opacity: 0; }
+  }
+
+  .hoop-score-popup {
+    position: absolute;
+    top: 60px;
+    left: 160px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #2fae5c;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hoop-score-popup.pop {
+    animation: hoopScorePop 1s ease-out;
+  }
+
+  @keyframes hoopScorePop {
+    0% { opacity: 0; transform: translateY(0) scale(0.8); }
+    20% { opacity: 1; transform: translateY(-10px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-55px) scale(1); }
   }
 
   .shot-meter-track {
@@ -682,6 +842,15 @@
     border-radius: 12px;
     margin-top: 16px;
     overflow: hidden;
+  }
+
+  .shot-meter-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    background: #555;
   }
 
   .shot-meter-green {
@@ -1177,7 +1346,7 @@
   }
 
   body.light-mode .nav-btn.active {
-    border-left-color: #000;
+    border-bottom-color: #000;
     box-shadow: inset 0 0 12px #00000022;
   }
 
@@ -1233,18 +1402,18 @@
   /* ---------- Mobile responsiveness ---------- */
   @media (max-width: 700px) {
     .sidebar {
-      width: 64px;
-      padding: 16px 0;
+      padding: 8px 10px;
+      gap: 2px;
     }
 
     .sidebar .logo {
-      font-size: 13px;
-      padding: 0 8px 14px 8px;
+      font-size: 15px;
+      padding: 0 10px 0 0;
     }
 
     .nav-btn {
-      font-size: 13px;
-      padding: 10px 8px;
+      font-size: 12px;
+      padding: 6px 8px;
     }
 
     .main {
@@ -1344,12 +1513,19 @@
       <h2 class="section-title">Recently Played</h2>
       <div class="game-grid" id="recent-grid"></div>
 
+      <h2 class="section-title" id="home-favorites-heading" style="display:none; margin-top:40px;">Favorites</h2>
+      <div class="game-grid" id="favorites-grid" style="display:none;"></div>
+
       <h2 class="section-title home-update-heading">Update Log</h2>
       <div id="update-log" class="update-log"></div>
     </section>
 
     <!-- GAMES VIEW -->
     <section id="view-games" class="view">
+      <h2 class="section-title" id="games-favorites-heading" style="display:none;">Favorites</h2>
+      <div class="carousel-wrap" id="games-favorites-carousel-wrap" style="display:none; margin-bottom:24px;">
+        <div class="carousel-track" id="games-favorites-track" tabindex="0"></div>
+      </div>
       <div class="games-toolbar">
         <input type="text" id="games-search" class="auth-input games-search-input" placeholder="Search games..." oninput="applyGameFilters()">
         <div class="genre-filters" id="genre-filters"></div>
@@ -1456,13 +1632,23 @@
       <div class="hoop-arena">
         <div class="hoop-backboard">
           <div class="hoop-timer" id="hoop-timer">60</div>
-          <div class="hoop-rim"></div>
-          <div class="hoop-net"></div>
+          <div class="hoop-square"></div>
         </div>
-        <div class="hoop-ball" id="hoop-ball">🏀</div>
+        <div class="hoop-rim"></div>
+        <div class="hoop-net">
+          <div class="hoop-net-lines"></div>
+        </div>
+        <div class="hoop-ball" id="hoop-ball" style="display:none;">
+          <div class="ball-seam ball-seam-h"></div>
+          <div class="ball-seam ball-seam-v"></div>
+          <div class="ball-seam ball-seam-d1"></div>
+          <div class="ball-seam ball-seam-d2"></div>
+        </div>
+        <div class="hoop-score-popup" id="hoop-score-popup"></div>
       </div>
 
       <div class="shot-meter-track" id="shot-meter-track" style="display:none;">
+        <div class="shot-meter-fill" id="shot-meter-fill"></div>
         <div class="shot-meter-green" id="shot-meter-green"></div>
         <div class="shot-meter-indicator" id="shot-meter-indicator"></div>
       </div>
@@ -1893,7 +2079,7 @@
   };
 
   const updateLog = [
-    { date: "Sep 10, 2026", text: "Site officially opened, Added a Music, Form, Store, Casino, Arcade and Settings pages, also did some bug fixes." },
+    { date: "Sep 10, 2026", text: "Site officially opened, Added a Music, Form, and Settings pages, also did some bug fixes." },
     { date: "Sep 9, 2026", text: "Added a Movies page." },
     { date: "Sep 8, 2026", text: "Added profile pictures, bios, and clickable profiles in Chat and Friends." },
     { date: "Sep 7, 2026", text: "Added a sign-in popup with Email, Username, Google, and Guest options." },
@@ -1917,6 +2103,68 @@
   }
 
   const RECENT_KEY = "g4m3_recent_games";
+  const FAVORITES_KEY = "g4m3_favorite_games";
+
+  function getFavorites() {
+    try {
+      return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function isFavorite(id) {
+    return getFavorites().includes(id);
+  }
+
+  window.toggleFavorite = function (id, starEl, event) {
+    if (event) event.stopPropagation();
+    let favs = getFavorites();
+    const nowFav = !favs.includes(id);
+    favs = nowFav ? [...favs, id] : favs.filter(f => f !== id);
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+    document.querySelectorAll(`.fav-star[onclick*="'${id}'"]`).forEach(el => {
+      el.classList.toggle("favorited", nowFav);
+      el.classList.remove("fav-pop");
+      void el.offsetWidth;
+      el.classList.add("fav-pop");
+    });
+    renderFavoritesSections();
+  };
+
+  function renderFavoritesSections() {
+    const favIds = getFavorites();
+    const favGames = favIds.map(id => games.find(g => g.id === id)).filter(Boolean);
+
+    const homeGrid = document.getElementById("favorites-grid");
+    const homeHeading = document.getElementById("home-favorites-heading");
+    if (homeGrid) {
+      homeGrid.innerHTML = "";
+      if (favGames.length === 0) {
+        if (homeHeading) homeHeading.style.display = "none";
+        homeGrid.style.display = "none";
+      } else {
+        if (homeHeading) homeHeading.style.display = "block";
+        homeGrid.style.display = "grid";
+        favGames.forEach(g => homeGrid.appendChild(renderCard(g)));
+      }
+    }
+
+    const gamesTrack = document.getElementById("games-favorites-track");
+    const gamesWrap = document.getElementById("games-favorites-carousel-wrap");
+    const gamesHeading = document.getElementById("games-favorites-heading");
+    if (gamesTrack) {
+      gamesTrack.innerHTML = "";
+      if (favGames.length === 0) {
+        if (gamesHeading) gamesHeading.style.display = "none";
+        if (gamesWrap) gamesWrap.style.display = "none";
+      } else {
+        if (gamesHeading) gamesHeading.style.display = "block";
+        if (gamesWrap) gamesWrap.style.display = "flex";
+        favGames.forEach(g => gamesTrack.appendChild(renderCard(g)));
+      }
+    }
+  }
 
   function recordRecentPlay(id) {
     let recent = [];
@@ -1990,10 +2238,12 @@
     const card = document.createElement("div");
     card.className = "game-card";
     card.onclick = () => showDetail(game.id);
+    const favorited = isFavorite(game.id);
     card.innerHTML = `
       <div class="thumb">
         <img src="thumbnails/${game.id}.png" alt="${game.title}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
         <span class="thumb-fallback">thumbnail</span>
+        <button class="fav-star ${favorited ? "favorited" : ""}" onclick="toggleFavorite('${game.id}', this, event)">★</button>
       </div>
       <h3>${game.title}</h3>
     `;
@@ -2068,9 +2318,11 @@
     if (navBtn) navBtn.classList.add("active");
     if (view === "home") {
       renderRecentGrid();
+      renderFavoritesSections();
     }
     if (view === "games") {
       applyGamesLayout();
+      renderFavoritesSections();
     }
     if (view === "settings") {
       applyGamesLayout();
@@ -2201,6 +2453,7 @@
   renderGrids();
   renderUpdateLog();
   renderRecentGrid();
+  renderFavoritesSections();
   applyGamesLayout();
   applyThemeMode();
 </script>
@@ -2653,6 +2906,9 @@
   const HOOP_ENTRY_COST = 500;
   const HOOP_DURATION = 60;
   const HOOP_POINTS_PER_MAKE = 50;
+  const HOOP_GREEN_START = 80; // fixed, near the end of the meter — precise timing required
+  const HOOP_GREEN_WIDTH = 8;  // fixed, small — real skill test
+  const HOOP_METER_SPEED = 1.6; // % per tick (16ms ticks) — full traversal in ~1s
 
   let hoopActive = false;
   let hoopTimeLeft = 0;
@@ -2661,9 +2917,6 @@
   let hoopCharging = false;
   let hoopMeterInterval = null;
   let hoopMeterPos = 0;
-  let hoopMeterDir = 1;
-  let hoopGreenStart = 40;
-  let hoopGreenWidth = 20;
   let hoopShotResolving = false;
 
   window.startHoopGame = async function () {
@@ -2688,7 +2941,11 @@
     document.getElementById("hoop-shoot-btn").style.display = "inline-block";
     document.getElementById("shot-meter-track").style.display = "block";
 
-    hoopSetupNextShot();
+    const greenEl = document.getElementById("shot-meter-green");
+    greenEl.style.left = HOOP_GREEN_START + "%";
+    greenEl.style.width = HOOP_GREEN_WIDTH + "%";
+
+    hoopSetupNextShot(true);
 
     hoopTimerInterval = setInterval(() => {
       hoopTimeLeft -= 1;
@@ -2699,26 +2956,38 @@
     }, 1000);
   };
 
-  function hoopSetupNextShot() {
-    hoopGreenWidth = 15 + Math.random() * 10; // 15-25% wide
-    hoopGreenStart = Math.random() * (100 - hoopGreenWidth);
-    const greenEl = document.getElementById("shot-meter-green");
-    greenEl.style.left = hoopGreenStart + "%";
-    greenEl.style.width = hoopGreenWidth + "%";
+  function hoopSetupNextShot(firstShot) {
     hoopMeterPos = 0;
-    hoopMeterDir = 1;
-    document.getElementById("shot-meter-indicator").style.left = "0%";
     hoopShotResolving = false;
+    document.getElementById("shot-meter-indicator").style.left = "0%";
+    document.getElementById("shot-meter-fill").style.width = "0%";
+
+    const ball = document.getElementById("hoop-ball");
+    ball.style.display = "block";
+    ball.classList.remove("shot-made", "shot-missed", "grab-in");
+    ball.style.bottom = "20px";
+    ball.style.left = "138px";
+    ball.style.opacity = "1";
+    ball.style.transform = "none";
+    void ball.offsetWidth;
+    ball.classList.add("grab-in");
   }
 
   window.hoopChargeStart = function () {
     if (!hoopActive || hoopCharging || hoopShotResolving) return;
     hoopCharging = true;
     hoopMeterInterval = setInterval(() => {
-      hoopMeterPos += hoopMeterDir * 3;
-      if (hoopMeterPos >= 100) { hoopMeterPos = 100; hoopMeterDir = -1; }
-      if (hoopMeterPos <= 0) { hoopMeterPos = 0; hoopMeterDir = 1; }
+      hoopMeterPos += HOOP_METER_SPEED;
+      if (hoopMeterPos >= 100) {
+        hoopMeterPos = 100;
+        document.getElementById("shot-meter-indicator").style.left = "100%";
+        document.getElementById("shot-meter-fill").style.width = "100%";
+        // Ran out of meter without releasing — automatic miss.
+        hoopRelease();
+        return;
+      }
       document.getElementById("shot-meter-indicator").style.left = hoopMeterPos + "%";
+      document.getElementById("shot-meter-fill").style.width = hoopMeterPos + "%";
     }, 16);
   };
 
@@ -2732,9 +3001,12 @@
     hoopShotResolving = true;
     clearInterval(hoopMeterInterval);
 
-    const inGreen = hoopMeterPos >= hoopGreenStart && hoopMeterPos <= hoopGreenStart + hoopGreenWidth;
+    const inGreen = hoopMeterPos >= HOOP_GREEN_START && hoopMeterPos <= HOOP_GREEN_START + HOOP_GREEN_WIDTH;
     const ball = document.getElementById("hoop-ball");
-    ball.classList.remove("shot-made", "shot-missed");
+    const rim = document.querySelector(".hoop-rim");
+    const net = document.querySelector(".hoop-net");
+    const popup = document.getElementById("hoop-score-popup");
+    ball.classList.remove("grab-in", "shot-made", "shot-missed");
     void ball.offsetWidth;
 
     if (inGreen) {
@@ -2742,27 +3014,40 @@
       ball.classList.add("shot-made");
       document.getElementById("hoop-makes").textContent = hoopMakes;
       document.getElementById("hoop-earned").textContent = hoopMakes * HOOP_POINTS_PER_MAKE;
+      setTimeout(() => {
+        net.classList.remove("swish");
+        void net.offsetWidth;
+        net.classList.add("swish");
+        popup.textContent = "+" + HOOP_POINTS_PER_MAKE;
+        popup.classList.remove("pop");
+        void popup.offsetWidth;
+        popup.classList.add("pop");
+      }, 380);
     } else {
       ball.classList.add("shot-missed");
+      setTimeout(() => {
+        rim.classList.remove("shake");
+        void rim.offsetWidth;
+        rim.classList.add("shake");
+      }, 300);
     }
 
     setTimeout(() => {
       ball.classList.remove("shot-made", "shot-missed");
-      ball.style.bottom = "0";
-      ball.style.left = "130px";
-      ball.style.opacity = "1";
-      ball.style.transform = "none";
-      if (hoopActive) hoopSetupNextShot();
-    }, 650);
+      ball.style.display = "none";
+      if (hoopActive) hoopSetupNextShot(false);
+    }, 750);
   };
 
   async function hoopEndGame() {
     hoopActive = false;
+    hoopCharging = false;
     clearInterval(hoopTimerInterval);
     clearInterval(hoopMeterInterval);
     document.getElementById("hoop-shoot-btn").style.display = "none";
     document.getElementById("shot-meter-track").style.display = "none";
     document.getElementById("hoop-start-btn").style.display = "inline-block";
+    document.getElementById("hoop-ball").style.display = "none";
 
     const earned = hoopMakes * HOOP_POINTS_PER_MAKE;
     if (earned > 0 && currentUser) {
