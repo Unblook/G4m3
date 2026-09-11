@@ -1074,6 +1074,8 @@
     <button class="nav-btn" data-view="friends" onclick="showView('friends')">Friends</button>
     <button class="nav-btn" data-view="chat" onclick="showView('chat')">Chat</button>
     <button class="nav-btn" data-view="settings" onclick="showView('settings')">Settings</button>
+    <button class="nav-btn" data-view="store" onclick="showView('store')">Store</button>
+    <button class="nav-btn" data-view="admin" id="admin-nav-btn" onclick="showView('admin')" style="display:none;">Admin</button>
   </div>
 
   <div id="auth-modal-overlay" class="auth-modal-overlay">
@@ -1154,6 +1156,28 @@
       <div class="auth-box">
         <label class="settings-radio"><input type="radio" name="theme-mode" value="dark" onchange="setThemeMode('dark')"> Dark mode</label>
         <label class="settings-radio"><input type="radio" name="theme-mode" value="light" onchange="setThemeMode('light')"> Light mode</label>
+      </div>
+    </section>
+
+    <!-- STORE VIEW -->
+    <section id="view-store" class="view">
+      <h1 class="hero-title">Store</h1>
+      <p class="profile-line">G4m3 Coins: <span id="store-coin-balance">0</span> (you earn 1 coin per minute)</p>
+
+      <h2 class="section-title" style="margin-top:30px;">Game Downloads</h2>
+      <p class="desc" style="margin-bottom:16px;">Buy a game once to unlock downloading its file for offline play.</p>
+      <div id="store-games-list" class="friends-list" style="max-width:600px;"></div>
+
+      <h2 class="section-title" style="margin-top:36px;">Profile Banners</h2>
+      <p class="desc" style="margin-bottom:16px;">Buy a banner to show on your profile.</p>
+      <div id="store-banners-list" class="friends-list" style="max-width:600px;"></div>
+    </section>
+
+    <!-- ADMIN VIEW (private) -->
+    <section id="view-admin" class="view">
+      <h1 class="hero-title">Admin</h1>
+      <div id="admin-content">
+        <p class="profile-line">Loading...</p>
       </div>
     </section>
 
@@ -1251,6 +1275,7 @@
           <button class="detail-back" onclick="document.getElementById('profile-pic-input').click()">Change Photo</button>
         </div>
         <p class="profile-line">Signed in as <span id="profile-email"></span></p>
+        <p class="profile-line">G4m3 Coins: <span id="coin-balance">0</span></p>
         <div class="auth-box">
           <input type="text" id="profile-name-input" class="auth-input" placeholder="Display name">
           <button class="play-btn" onclick="handleSaveName()">Save Name</button>
@@ -1736,6 +1761,12 @@
       applyGamesLayout();
       applyThemeMode();
     }
+    if (view === "store" && window.__g4m3SignedIn && typeof window.renderStorePage === "function") {
+      window.renderStorePage();
+    }
+    if (view === "admin" && typeof window.renderAdminPage === "function") {
+      window.renderAdminPage();
+    }
     if (view === "friends" && window.__g4m3SignedIn && typeof window.loadAllAccounts === "function") {
       window.loadAllAccounts();
       window.loadFriends();
@@ -1900,6 +1931,157 @@
     return "Guest";
   }
 
+  // ---- Coins ----
+  let coinInterval = null;
+  let currentCoins = 0;
+
+  function updateCoinDisplay() {
+    const el = document.getElementById("coin-balance");
+    if (el) el.textContent = currentCoins;
+    const storeEl = document.getElementById("store-coin-balance");
+    if (storeEl) storeEl.textContent = currentCoins;
+  }
+
+  async function initCoins() {
+    if (!currentUser) return;
+    const ref = doc(db, "users", currentUser.uid);
+    const snap = await getDoc(ref);
+    const data = snap.exists() ? snap.data() : {};
+    let coins = data.coins || 0;
+    const lastTime = data.lastCoinTime || Date.now();
+    const elapsedMinutes = Math.floor((Date.now() - lastTime) / 60000);
+    if (elapsedMinutes > 0) {
+      coins += elapsedMinutes;
+      await setDoc(ref, { coins: coins, lastCoinTime: Date.now() }, { merge: true });
+    } else if (!data.lastCoinTime) {
+      await setDoc(ref, { coins: coins, lastCoinTime: Date.now() }, { merge: true });
+    }
+    currentCoins = coins;
+    updateCoinDisplay();
+    stopCoinAccrual();
+    coinInterval = setInterval(async () => {
+      if (!currentUser) return;
+      currentCoins += 1;
+      updateCoinDisplay();
+      await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins, lastCoinTime: Date.now() }, { merge: true });
+    }, 60000);
+  }
+
+  function stopCoinAccrual() {
+    if (coinInterval) {
+      clearInterval(coinInterval);
+      coinInterval = null;
+    }
+  }
+
+  // ---- Store ----
+  const GAME_DOWNLOAD_COST = 50;
+
+  const BANNERS = [
+    { id: "banner-sunset", name: "Sunset", cost: 100, css: "linear-gradient(90deg, #ff5f6d, #ffc371)" },
+    { id: "banner-ocean", name: "Ocean", cost: 100, css: "linear-gradient(90deg, #2193b0, #6dd5ed)" },
+    { id: "banner-purple", name: "Purple Haze", cost: 150, css: "linear-gradient(90deg, #7b2ff7, #f107a3)" },
+    { id: "banner-gold", name: "Gold Rush", cost: 200, css: "linear-gradient(90deg, #f7971e, #ffd200)" },
+    { id: "banner-mono", name: "Monochrome", cost: 75, css: "linear-gradient(90deg, #232526, #414345)" }
+  ];
+
+  async function renderStorePage() {
+    if (!currentUser) return;
+    const snap = await getDoc(doc(db, "users", currentUser.uid));
+    const data = snap.exists() ? snap.data() : {};
+    const ownedGames = data.ownedGames || [];
+    const ownedBanners = data.ownedBanners || [];
+    const activeBanner = data.activeBanner || "";
+
+    const gamesList = document.getElementById("store-games-list");
+    gamesList.innerHTML = "";
+    games.forEach(game => {
+      const owned = ownedGames.includes(game.id);
+      const row = document.createElement("div");
+      row.className = "account-row";
+      const fileUrl = "games/" + encodeURIComponent(gameFileOverrides[game.id] || (game.id + ".html"));
+      row.innerHTML = `
+        <span>${game.title}</span>
+        ${owned
+          ? `<a class="account-add-btn" href="${fileUrl}" download>Download</a>`
+          : `<button class="account-add-btn" onclick="buyGameDownload('${game.id}', this)">Buy (${GAME_DOWNLOAD_COST})</button>`}
+      `;
+      gamesList.appendChild(row);
+    });
+
+    const bannersList = document.getElementById("store-banners-list");
+    bannersList.innerHTML = "";
+    BANNERS.forEach(banner => {
+      const owned = ownedBanners.includes(banner.id);
+      const isActive = activeBanner === banner.id;
+      const row = document.createElement("div");
+      row.className = "account-row";
+      row.style.background = banner.css;
+      let btnHtml;
+      if (isActive) {
+        btnHtml = `<button class="account-add-btn" disabled>Equipped</button>`;
+      } else if (owned) {
+        btnHtml = `<button class="account-add-btn" onclick="equipBanner('${banner.id}')">Equip</button>`;
+      } else {
+        btnHtml = `<button class="account-add-btn" onclick="buyBanner('${banner.id}', ${banner.cost}, this)">Buy (${banner.cost})</button>`;
+      }
+      row.innerHTML = `<span style="text-shadow:0 1px 3px #000;">${banner.name}</span>${btnHtml}`;
+      bannersList.appendChild(row);
+    });
+  }
+
+  window.buyGameDownload = async function (gameId, btn) {
+    if (!currentUser) return;
+    if (currentCoins < GAME_DOWNLOAD_COST) {
+      alert("Not enough coins!");
+      return;
+    }
+    btn.disabled = true;
+    try {
+      currentCoins -= GAME_DOWNLOAD_COST;
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        coins: currentCoins,
+        ownedGames: arrayUnion(gameId)
+      });
+      updateCoinDisplay();
+      renderStorePage();
+    } catch (err) {
+      currentCoins += GAME_DOWNLOAD_COST;
+      updateCoinDisplay();
+      btn.disabled = false;
+      console.error(err);
+    }
+  };
+
+  window.buyBanner = async function (bannerId, cost, btn) {
+    if (!currentUser) return;
+    if (currentCoins < cost) {
+      alert("Not enough coins!");
+      return;
+    }
+    btn.disabled = true;
+    try {
+      currentCoins -= cost;
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        coins: currentCoins,
+        ownedBanners: arrayUnion(bannerId)
+      });
+      updateCoinDisplay();
+      renderStorePage();
+    } catch (err) {
+      currentCoins += cost;
+      updateCoinDisplay();
+      btn.disabled = false;
+      console.error(err);
+    }
+  };
+
+  window.equipBanner = async function (bannerId) {
+    if (!currentUser) return;
+    await setDoc(doc(db, "users", currentUser.uid), { activeBanner: bannerId }, { merge: true });
+    renderStorePage();
+  };
+
   function setAuthError(id, message) {
     document.getElementById(id).textContent = message || "";
   }
@@ -2040,8 +2222,9 @@
       const myFriends = (mySnap && mySnap.exists() && mySnap.data().friends) || [];
       const alreadyRequested = (data.incomingRequests || []).includes(currentUser ? currentUser.uid : "");
       if (myFriends.includes(uid)) {
-        addBtn.textContent = "Friends";
-        addBtn.disabled = true;
+        addBtn.textContent = "Unfriend";
+        addBtn.disabled = false;
+        addBtn.onclick = () => unfriendUser(uid, addBtn);
       } else if (alreadyRequested) {
         addBtn.textContent = "Requested";
         addBtn.disabled = true;
@@ -2212,6 +2395,26 @@
     } catch (err) {
       btn.disabled = false;
       btn.textContent = "Add";
+      console.error(err);
+    }
+  };
+
+  window.unfriendUser = async function (friendUid, btn) {
+    if (!currentUser) return;
+    btn.disabled = true;
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        friends: arrayRemove(friendUid)
+      });
+      await updateDoc(doc(db, "users", friendUid), {
+        friends: arrayRemove(currentUser.uid)
+      });
+      btn.textContent = "Add Friend";
+      btn.disabled = false;
+      btn.onclick = () => addFriendByUid(friendUid, btn);
+      loadFriends();
+    } catch (err) {
+      btn.disabled = false;
       console.error(err);
     }
   };
@@ -2425,7 +2628,60 @@
   window.loadFriends = loadFriends;
   window.loadAllAccounts = loadAllAccounts;
   window.loadChatDmList = loadChatDmList;
+  // ---- Admin ----
+  // Replace this with your own Firebase Auth UID (Firebase console > Authentication > Users > copy your row's User UID).
+  const ADMIN_UID = "J1acVdVmxTeTd14vnYFZrBPvcsp1";
+
+  function applyAdminVisibility() {
+    const btn = document.getElementById("admin-nav-btn");
+    if (!btn) return;
+    btn.style.display = (currentUser && currentUser.uid === ADMIN_UID) ? "block" : "none";
+  }
+
+  window.renderAdminPage = async function () {
+    const content = document.getElementById("admin-content");
+    if (!currentUser || currentUser.uid !== ADMIN_UID) {
+      content.innerHTML = '<p class="profile-line">Not authorized.</p>';
+      return;
+    }
+    content.innerHTML = '<p class="profile-line">Loading users...</p>';
+    const querySnap = await getDocs(collection(db, "users"));
+    content.innerHTML = "";
+    const list = document.createElement("div");
+    list.className = "friends-list";
+    list.style.maxWidth = "600px";
+    querySnap.forEach(docSnap => {
+      const uid = docSnap.id;
+      const data = docSnap.data();
+      const row = document.createElement("div");
+      row.className = "account-row";
+      row.innerHTML = `
+        <span>${displayLabelFor(data)} ${data.email ? "(" + data.email + ")" : ""}</span>
+        <button class="account-add-btn" onclick="adminGrantCoins('${uid}')">+50 coins</button>
+        <button class="account-add-btn" onclick="adminDeleteUser('${uid}', '${data.username || ""}', '${data.email || ""}')">Delete</button>
+      `;
+      list.appendChild(row);
+    });
+    content.appendChild(list);
+  };
+
+  window.adminGrantCoins = async function (uid) {
+    const snap = await getDoc(doc(db, "users", uid));
+    const coins = (snap.exists() && snap.data().coins) || 0;
+    await updateDoc(doc(db, "users", uid), { coins: coins + 50 });
+    renderAdminPage();
+  };
+
+  window.adminDeleteUser = async function (uid, username, email) {
+    if (!confirm("Delete this account's data? This cannot be undone.")) return;
+    await deleteDoc(doc(db, "users", uid)).catch(() => {});
+    if (username) await deleteDoc(doc(db, "usernames", username)).catch(() => {});
+    if (email) await deleteDoc(doc(db, "emailIndex", email.toLowerCase())).catch(() => {});
+    renderAdminPage();
+  };
+
   window.loadFriendRequests = loadFriendRequests;
+  window.renderStorePage = renderStorePage;
 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
@@ -2466,12 +2722,16 @@
       document.getElementById("profile-bio-input").value = bio;
       applyAvatar(document.getElementById("profile-pic"), document.getElementById("profile-pic-fallback"), photo);
       currentLabel = label;
+      await initCoins();
       loadFriends();
       loadAllAccounts();
       loadFriendRequests();
       loadChatDmList();
       activeChatPath = "messages";
       startChatListener();
+      applyAdminVisibility();
+    } else {
+      stopCoinAccrual();
     }
   });
 </script>
