@@ -540,7 +540,6 @@
     border: 4px solid #fff;
     border-radius: 16px;
     background: #0a0a0a;
-    margin: 0 auto;
   }
 
   .wheel-reel-marker {
@@ -2454,8 +2453,18 @@
   // Wheel prize tiers, low-bet distribution vs high-bet distribution — interpolated by bet size.
   const WHEEL_BET_TIERS = [10, 25, 50, 100, 250, 500];
   const WHEEL_PRIZES = [10000, 5000, 1000, 500, 100, 50, 10];
-  const WHEEL_HIGH_ODDS = { 10000: 1 / 100, 5000: 1 / 75, 1000: 1 / 50, 500: 1 / 35, 100: 1 / 25, 50: 1 / 10, 10: 1 / 5 };
-  const WHEEL_LOW_ODDS = { 10000: 1 / 1000, 5000: 1 / 500, 1000: 1 / 250, 500: 1 / 100, 100: 1 / 25, 50: 1 / 6, 10: 1 / 3 };
+  const WHEEL_HIGH_RAW = { 10000: 1 / 100, 5000: 1 / 75, 1000: 1 / 50, 500: 1 / 35, 100: 1 / 25, 50: 1 / 10, 10: 1 / 5 };
+  const WHEEL_LOW_RAW = { 10000: 1 / 1000, 5000: 1 / 500, 1000: 1 / 250, 500: 1 / 100, 100: 1 / 25, 50: 1 / 6, 10: 1 / 3 };
+
+  function normalizeOdds(raw) {
+    const total = WHEEL_PRIZES.reduce((sum, p) => sum + raw[p], 0);
+    const normalized = {};
+    WHEEL_PRIZES.forEach(p => { normalized[p] = raw[p] / total; });
+    return normalized;
+  }
+
+  const WHEEL_HIGH_ODDS = normalizeOdds(WHEEL_HIGH_RAW);
+  const WHEEL_LOW_ODDS = normalizeOdds(WHEEL_LOW_RAW);
 
   function getWheelOdds(bet) {
     const idx = WHEEL_BET_TIERS.indexOf(bet);
@@ -2475,7 +2484,7 @@
       cumulative += odds[prize];
       if (roll < cumulative) return prize;
     }
-    return 0; // loss
+    return WHEEL_PRIZES[WHEEL_PRIZES.length - 1]; // rounding safety net — always a real prize
   }
 
   const WHEEL_SEGMENT_WIDTH = 100;
