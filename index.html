@@ -2446,6 +2446,9 @@
       document.getElementById("casino-coin-balance").textContent = currentCoins;
       await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
     }
+    setTimeout(() => {
+      document.getElementById("bj-table").style.display = "none";
+    }, 3000);
   }
 
   // Wheel prize tiers, low-bet distribution vs high-bet distribution — interpolated by bet size.
