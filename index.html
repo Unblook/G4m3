@@ -509,6 +509,54 @@
     box-shadow: 0 0 10px 2px #fff;
   }
 
+  .broadcast-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    color: #000;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 3000;
+    box-shadow: 0 2px 12px 2px #ffffff55;
+  }
+
+  .broadcast-banner .auth-modal-close {
+    position: static;
+    color: #000;
+  }
+
+  .wheel-visual {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(#ff5f6d, #ffc371, #2193b0, #6dd5ed, #7b2ff7, #f107a3, #f7971e, #ffd200, #ff5f6d);
+    border: 4px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 4px #000;
+    margin-bottom: 20px;
+    transition: transform 3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .wheel-visual.spinning {
+    transform: rotate(1800deg);
+  }
+
+  .wheel-bet-btn {
+    margin-bottom: 8px;
+  }
+
   /* ---------- Unblocked Youtube view ---------- */
   .yt-steps {
     display: flex;
@@ -1075,6 +1123,7 @@
     <button class="nav-btn" data-view="chat" onclick="showView('chat')">Chat</button>
     <button class="nav-btn" data-view="settings" onclick="showView('settings')">Settings</button>
     <button class="nav-btn" data-view="store" onclick="showView('store')">Store</button>
+    <button class="nav-btn" data-view="casino" onclick="showView('casino')">Casino</button>
     <button class="nav-btn" data-view="admin" id="admin-nav-btn" onclick="showView('admin')" style="display:none;">Admin</button>
   </div>
 
@@ -1173,13 +1222,49 @@
       <div id="store-banners-list" class="friends-list" style="max-width:600px;"></div>
     </section>
 
-    <!-- ADMIN VIEW (private) -->
-    <section id="view-admin" class="view">
+    <!-- CASINO VIEW -->
+    <section id="view-casino" class="view">
+      <h1 class="hero-title">Casino</h1>
+      <p class="profile-line">G4m3 Coins: <span id="casino-coin-balance">0</span></p>
+
+      <h2 class="section-title" style="margin-top:30px;">Blackjack Bot</h2>
+      <p class="desc" style="margin-bottom:16px;">Double or nothing — 50/50 chance.</p>
+      <div class="auth-box">
+        <input type="number" id="blackjack-bet" class="auth-input" placeholder="Amount to bet">
+        <button class="play-btn" onclick="playBlackjack()">Play</button>
+        <p id="blackjack-result" class="profile-line"></p>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">Wheel</h2>
+      <p class="desc" style="margin-bottom:16px;">Bigger bets have better odds at the big prizes.</p>
+      <div id="wheel-visual" class="wheel-visual">?</div>
+      <div class="auth-btn-row" style="flex-wrap:wrap; max-width:500px;">
+        <button class="account-add-btn wheel-bet-btn" onclick="spinWheel(10)">Bet 10</button>
+        <button class="account-add-btn wheel-bet-btn" onclick="spinWheel(25)">Bet 25</button>
+        <button class="account-add-btn wheel-bet-btn" onclick="spinWheel(50)">Bet 50</button>
+        <button class="account-add-btn wheel-bet-btn" onclick="spinWheel(100)">Bet 100</button>
+        <button class="account-add-btn wheel-bet-btn" onclick="spinWheel(250)">Bet 250</button>
+        <button class="account-add-btn wheel-bet-btn" onclick="spinWheel(500)">Bet 500</button>
+      </div>
+      <p id="wheel-result" class="profile-line" style="margin-top:16px;"></p>
+    </section>
       <h1 class="hero-title">Admin</h1>
+      <h2 class="section-title">Broadcast a message</h2>
+      <div class="auth-box">
+        <input type="text" id="broadcast-input" class="auth-input" placeholder="Message to show everyone..." onkeydown="if(event.key==='Enter') sendBroadcast();">
+        <button class="play-btn" onclick="sendBroadcast()">Send</button>
+      </div>
+      <h2 class="section-title" style="margin-top:30px;">Users</h2>
       <div id="admin-content">
         <p class="profile-line">Loading...</p>
       </div>
     </section>
+
+    <!-- BROADCAST BANNER -->
+    <div id="broadcast-banner" class="broadcast-banner" style="display:none;">
+      <span id="broadcast-text"></span>
+      <button class="auth-modal-close" onclick="dismissBroadcast()">&times;</button>
+    </div>
 
     <!-- GAME DETAIL VIEW -->
     <section id="view-detail" class="view">
@@ -1764,6 +1849,10 @@
     if (view === "store" && window.__g4m3SignedIn && typeof window.renderStorePage === "function") {
       window.renderStorePage();
     }
+    if (view === "casino") {
+      const el = document.getElementById("casino-coin-balance");
+      if (el && typeof window.getCurrentCoins === "function") el.textContent = window.getCurrentCoins();
+    }
     if (view === "admin" && typeof window.renderAdminPage === "function") {
       window.renderAdminPage();
     }
@@ -1895,7 +1984,7 @@
     collection, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
-    getDatabase, ref, push, onValue, query as rtdbQuery, limitToLast,
+    getDatabase, ref, push, set, onValue, query as rtdbQuery, limitToLast,
     serverTimestamp as rtdbServerTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -2080,6 +2169,94 @@
     if (!currentUser) return;
     await setDoc(doc(db, "users", currentUser.uid), { activeBanner: bannerId }, { merge: true });
     renderStorePage();
+  };
+
+  // ---- Casino ----
+  window.playBlackjack = async function () {
+    if (!currentUser) return;
+    const input = document.getElementById("blackjack-bet");
+    const bet = parseInt(input.value, 10);
+    const resultEl = document.getElementById("blackjack-result");
+    if (!bet || bet <= 0) {
+      resultEl.textContent = "Enter a valid bet amount.";
+      return;
+    }
+    if (bet > currentCoins) {
+      resultEl.textContent = "Not enough coins!";
+      return;
+    }
+    currentCoins -= bet;
+    const won = Math.random() < 0.5;
+    if (won) {
+      currentCoins += bet * 2;
+      resultEl.textContent = "You won! +" + bet + " coins.";
+    } else {
+      resultEl.textContent = "You lost " + bet + " coins.";
+    }
+    updateCoinDisplay();
+    document.getElementById("casino-coin-balance").textContent = currentCoins;
+    await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
+  };
+
+  // Wheel prize tiers, low-bet distribution vs high-bet distribution — interpolated by bet size.
+  const WHEEL_BET_TIERS = [10, 25, 50, 100, 250, 500];
+  const WHEEL_PRIZES = [10000, 5000, 1000, 500, 100, 50, 10];
+  const WHEEL_HIGH_ODDS = { 10000: 1 / 100, 5000: 1 / 75, 1000: 1 / 50, 500: 1 / 35, 100: 1 / 25, 50: 1 / 10, 10: 1 / 5 };
+  const WHEEL_LOW_ODDS = { 10000: 1 / 1000, 5000: 1 / 500, 1000: 1 / 250, 500: 1 / 100, 100: 1 / 25, 50: 1 / 6, 10: 1 / 3 };
+
+  function getWheelOdds(bet) {
+    const idx = WHEEL_BET_TIERS.indexOf(bet);
+    const t = idx / (WHEEL_BET_TIERS.length - 1);
+    const odds = {};
+    WHEEL_PRIZES.forEach(prize => {
+      odds[prize] = WHEEL_LOW_ODDS[prize] + (WHEEL_HIGH_ODDS[prize] - WHEEL_LOW_ODDS[prize]) * t;
+    });
+    return odds;
+  }
+
+  function rollWheel(bet) {
+    const odds = getWheelOdds(bet);
+    const roll = Math.random();
+    let cumulative = 0;
+    for (const prize of WHEEL_PRIZES) {
+      cumulative += odds[prize];
+      if (roll < cumulative) return prize;
+    }
+    return 0; // loss
+  }
+
+  window.spinWheel = async function (bet) {
+    if (!currentUser) return;
+    if (bet > currentCoins) {
+      document.getElementById("wheel-result").textContent = "Not enough coins!";
+      return;
+    }
+    document.querySelectorAll(".wheel-bet-btn").forEach(b => b.disabled = true);
+    currentCoins -= bet;
+    updateCoinDisplay();
+    document.getElementById("casino-coin-balance").textContent = currentCoins;
+    await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
+
+    const wheelEl = document.getElementById("wheel-visual");
+    wheelEl.classList.remove("spinning");
+    void wheelEl.offsetWidth;
+    wheelEl.classList.add("spinning");
+    document.getElementById("wheel-result").textContent = "Spinning...";
+
+    const prize = rollWheel(bet);
+    setTimeout(async () => {
+      wheelEl.textContent = prize > 0 ? prize : "0";
+      document.querySelectorAll(".wheel-bet-btn").forEach(b => b.disabled = false);
+      if (prize > 0) {
+        currentCoins += prize;
+        document.getElementById("wheel-result").textContent = "You won " + prize + " coins!";
+      } else {
+        document.getElementById("wheel-result").textContent = "No win this time.";
+      }
+      updateCoinDisplay();
+      document.getElementById("casino-coin-balance").textContent = currentCoins;
+      await setDoc(doc(db, "users", currentUser.uid), { coins: currentCoins }, { merge: true });
+    }, 3000);
   };
 
   function setAuthError(id, message) {
@@ -2632,6 +2809,32 @@
   // Replace this with your own Firebase Auth UID (Firebase console > Authentication > Users > copy your row's User UID).
   const ADMIN_UID = "J1acVdVmxTeTd14vnYFZrBPvcsp1";
 
+  window.sendBroadcast = async function () {
+    const input = document.getElementById("broadcast-input");
+    const text = input.value.trim();
+    if (!text || !currentUser || currentUser.uid !== ADMIN_UID) return;
+    await set(ref(rtdb, "broadcast"), { text: text, timestamp: Date.now() });
+    input.value = "";
+  };
+
+  window.dismissBroadcast = function () {
+    document.getElementById("broadcast-banner").style.display = "none";
+  };
+
+  function startBroadcastListener() {
+    onValue(ref(rtdb, "broadcast"), (snap) => {
+      const data = snap.val();
+      if (!data || !data.text) return;
+      const lastShown = parseInt(localStorage.getItem("g4m3_broadcast_seen") || "0", 10);
+      if (data.timestamp > lastShown) {
+        document.getElementById("broadcast-text").textContent = data.text;
+        document.getElementById("broadcast-banner").style.display = "flex";
+        localStorage.setItem("g4m3_broadcast_seen", String(data.timestamp));
+      }
+    });
+  }
+  startBroadcastListener();
+
   function applyAdminVisibility() {
     const btn = document.getElementById("admin-nav-btn");
     if (!btn) return;
@@ -2657,7 +2860,8 @@
       row.className = "account-row";
       row.innerHTML = `
         <span>${displayLabelFor(data)} ${data.email ? "(" + data.email + ")" : ""}</span>
-        <button class="account-add-btn" onclick="adminGrantCoins('${uid}')">+50 coins</button>
+        <input type="number" class="auth-input" id="coin-amt-${uid}" placeholder="Amount" style="width:90px; padding:6px 8px;">
+        <button class="account-add-btn" onclick="adminGrantCoins('${uid}')">Give</button>
         <button class="account-add-btn" onclick="adminDeleteUser('${uid}', '${data.username || ""}', '${data.email || ""}')">Delete</button>
       `;
       list.appendChild(row);
@@ -2666,9 +2870,17 @@
   };
 
   window.adminGrantCoins = async function (uid) {
+    const input = document.getElementById("coin-amt-" + uid);
+    const amount = parseInt(input.value, 10);
+    if (!amount || isNaN(amount)) return;
     const snap = await getDoc(doc(db, "users", uid));
     const coins = (snap.exists() && snap.data().coins) || 0;
-    await updateDoc(doc(db, "users", uid), { coins: coins + 50 });
+    await updateDoc(doc(db, "users", uid), { coins: coins + amount });
+    if (currentUser && uid === currentUser.uid) {
+      currentCoins = coins + amount;
+      updateCoinDisplay();
+    }
+    input.value = "";
     renderAdminPage();
   };
 
@@ -2682,6 +2894,7 @@
 
   window.loadFriendRequests = loadFriendRequests;
   window.renderStorePage = renderStorePage;
+  window.getCurrentCoins = () => currentCoins;
 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
