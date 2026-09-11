@@ -534,59 +534,61 @@
 
   .wheel-reel-viewport {
     position: relative;
-    width: 320px;
-    height: 90px;
+    width: 130px;
+    height: 280px;
     overflow: hidden;
-    border: 3px solid #fff;
-    border-radius: 10px;
+    border: 4px solid #fff;
+    border-radius: 16px;
     background: #0a0a0a;
+    margin: 0 auto;
   }
 
   .wheel-reel-marker {
     position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 3px;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 3px;
     background: #ff3b3b;
-    transform: translateX(-50%);
+    transform: translateY(-50%);
     z-index: 5;
     box-shadow: 0 0 8px 2px #ff3b3b;
   }
 
   .wheel-reel {
     display: flex;
-    height: 100%;
+    flex-direction: column;
+    width: 100%;
     will-change: transform;
   }
 
   .wheel-segment {
     flex: 0 0 100px;
-    height: 100%;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 20px;
     color: #fff;
-    border-right: 2px solid #ffffff22;
+    border-bottom: 2px solid #ffffff22;
   }
 
   .wheel-segment.jackpot {
-    background: linear-gradient(180deg, #ffd200, #f7971e);
+    background: linear-gradient(90deg, #ffd200, #f7971e);
     color: #000;
   }
 
   .wheel-segment.tier-5000 { background: #7b2ff7; }
   .wheel-segment.tier-1000 { background: #2193b0; }
-  .wheel-segment.tier-500 { background: #444; }
-  .wheel-segment.tier-100 { background: #333; }
-  .wheel-segment.tier-50 { background: #222; }
-  .wheel-segment.tier-10 { background: #1a1a1a; }
+  .wheel-segment.tier-500 { background: #e04ea0; }
+  .wheel-segment.tier-100 { background: #2fae5c; }
+  .wheel-segment.tier-50 { background: #d15c1e; }
+  .wheel-segment.tier-10 { background: #3a6bd1; }
 
   .wheel-segment .jackpot-label {
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 1px;
   }
 
@@ -2524,12 +2526,12 @@
     wheelSpinCount = landingIndex;
 
     const viewport = document.querySelector(".wheel-reel-viewport");
-    const viewportWidth = viewport.clientWidth;
-    const targetX = -(landingIndex * WHEEL_SEGMENT_WIDTH + WHEEL_SEGMENT_WIDTH / 2 - viewportWidth / 2);
+    const viewportHeight = viewport.clientHeight;
+    const targetY = -(landingIndex * WHEEL_SEGMENT_WIDTH + WHEEL_SEGMENT_WIDTH / 2 - viewportHeight / 2);
 
     const reel = document.getElementById("wheel-reel");
     reel.style.transition = "transform 3s cubic-bezier(0.15, 0.8, 0.2, 1)";
-    reel.style.transform = "translateX(" + targetX + "px)";
+    reel.style.transform = "translateY(" + targetY + "px)";
 
     setTimeout(async () => {
       document.querySelectorAll(".wheel-bet-btn").forEach(b => b.disabled = false);
