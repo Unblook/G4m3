@@ -1450,6 +1450,37 @@
     background: #ffffff22;
   }
 
+  .gif-picker {
+    max-width: 600px;
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .gif-results {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  .gif-results img {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+
+  .gif-results img:hover {
+    transform: scale(1.05);
+  }
+
   .chat-message .sender {
     color: #999;
     font-size: 12px;
@@ -2442,8 +2473,13 @@
             <h3 class="auth-heading" id="chat-thread-title">Public Chat</h3>
             <div id="chat-messages" class="chat-messages"></div>
             <div id="emoji-picker" class="emoji-picker" style="display:none;"></div>
+            <div id="gif-picker" class="gif-picker" style="display:none;">
+              <input type="text" id="gif-search-input" class="auth-input" placeholder="Search GIFs..." oninput="searchGifs()">
+              <div id="gif-results" class="gif-results"></div>
+            </div>
             <div class="chat-input-row">
               <button class="account-add-btn" onclick="toggleEmojiPicker()" type="button">&#128512;</button>
+              <button class="account-add-btn" onclick="toggleGifPicker()" type="button">GIF</button>
               <input type="text" id="chat-input" placeholder="Type a message, or paste an image/GIF link..." class="auth-input" onkeydown="if(event.key==='Enter') handleSendMessage();">
               <p id="chat-guest-notice" class="auth-error" style="display:none;">Guest accounts can't use chat — sign in with an email, username, or Google account.</p>
               <button class="play-btn" id="chat-send-btn" onclick="handleSendMessage()">Send</button>
@@ -4665,6 +4701,7 @@
   const CHAT_EMOJIS = ["😀","😂","😍","😎","😭","😡","👍","👎","🔥","💀","🎮","🏀","🎉","❤️","😴","🤔","😱","👀","💯","🙌"];
 
   window.toggleEmojiPicker = function () {
+    document.getElementById("gif-picker").style.display = "none";
     const picker = document.getElementById("emoji-picker");
     if (picker.style.display === "none") {
       picker.innerHTML = CHAT_EMOJIS.map(e => `<span onclick="insertEmoji('${e}')">${e}</span>`).join("");
@@ -4673,6 +4710,70 @@
     } else {
       picker.style.display = "none";
     }
+  };
+
+  // Giphy's publicly documented demo key — fine for testing, but has a strict rate limit.
+  // Get your own free key at developers.giphy.com and swap it in here for real use.
+  const GIPHY_API_KEY = "dc6zaTOxFJmzC";
+  let gifSearchDebounce = null;
+
+  window.toggleGifPicker = function () {
+    document.getElementById("emoji-picker").style.display = "none";
+    const picker = document.getElementById("gif-picker");
+    if (picker.style.display === "none") {
+      picker.style.display = "block";
+      document.getElementById("gif-search-input").focus();
+      loadTrendingGifs();
+    } else {
+      picker.style.display = "none";
+    }
+  };
+
+  async function loadTrendingGifs() {
+    try {
+      const res = await fetch(`https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=12&rating=pg-13`);
+      const data = await res.json();
+      renderGifResults(data.data);
+    } catch (e) {
+      document.getElementById("gif-results").innerHTML = '<p class="profile-line" style="grid-column:1/-1;">Couldn\'t load GIFs.</p>';
+    }
+  }
+
+  window.searchGifs = function () {
+    clearTimeout(gifSearchDebounce);
+    const query = document.getElementById("gif-search-input").value.trim();
+    gifSearchDebounce = setTimeout(async () => {
+      if (!query) { loadTrendingGifs(); return; }
+      try {
+        const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=12&rating=pg-13`);
+        const data = await res.json();
+        renderGifResults(data.data);
+      } catch (e) {
+        document.getElementById("gif-results").innerHTML = '<p class="profile-line" style="grid-column:1/-1;">Couldn\'t load GIFs.</p>';
+      }
+    }, 400);
+  };
+
+  function renderGifResults(gifs) {
+    const box = document.getElementById("gif-results");
+    box.innerHTML = "";
+    if (!gifs || gifs.length === 0) {
+      box.innerHTML = '<p class="profile-line" style="grid-column:1/-1;">No results.</p>';
+      return;
+    }
+    gifs.forEach(gif => {
+      const img = document.createElement("img");
+      img.src = gif.images.fixed_height_small.url;
+      img.onclick = () => sendGifMessage(gif.images.original.url);
+      box.appendChild(img);
+    });
+  }
+
+  window.sendGifMessage = async function (url) {
+    document.getElementById("gif-picker").style.display = "none";
+    const input = document.getElementById("chat-input");
+    input.value = url;
+    await handleSendMessage();
   };
 
   window.insertEmoji = function (emoji) {
