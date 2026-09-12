@@ -2212,6 +2212,7 @@
             <div id="chat-messages" class="chat-messages"></div>
             <div class="chat-input-row">
               <input type="text" id="chat-input" placeholder="Type a message..." class="auth-input" onkeydown="if(event.key==='Enter') handleSendMessage();">
+              <p id="chat-guest-notice" class="auth-error" style="display:none;">Guest accounts can't use chat — sign in with an email, username, or Google account.</p>
               <button class="play-btn" onclick="handleSendMessage()">Send</button>
             </div>
           </div>
@@ -4102,6 +4103,10 @@
     const input = document.getElementById("chat-input");
     const text = input.value.trim();
     if (!currentUser || !text) return;
+    if (currentUser.isAnonymous) {
+      alert("Guest accounts can't use chat. Sign in with an email, username, or Google account to chat.");
+      return;
+    }
     input.value = "";
     await push(ref(rtdb, activeChatPath), {
       text: text,
@@ -4354,6 +4359,13 @@
         photo = d.photo || null;
       }
       if (user.isAnonymous) label = "Guest";
+      const chatInputEl = document.getElementById("chat-input");
+      const chatGuestNotice = document.getElementById("chat-guest-notice");
+      if (chatInputEl && chatGuestNotice) {
+        chatInputEl.disabled = user.isAnonymous;
+        chatInputEl.placeholder = user.isAnonymous ? "Sign in to chat..." : "Type a message...";
+        chatGuestNotice.style.display = user.isAnonymous ? "block" : "none";
+      }
       document.getElementById("profile-email").textContent = label;
       document.getElementById("profile-name-input").value = savedName;
       document.getElementById("profile-bio-input").value = bio;
