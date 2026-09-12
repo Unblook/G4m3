@@ -4705,7 +4705,7 @@
     const picker = document.getElementById("emoji-picker");
     if (picker.style.display === "none") {
       picker.innerHTML = CHAT_EMOJIS.map(e => `<span onclick="insertEmoji('${e}')">${e}</span>`).join("");
-      if (window.twemoji) twemoji.parse(picker, { folder: "svg", ext: ".svg" });
+      if (window.twemoji) twemoji.parse(picker, { folder: "svg", ext: ".svg", base: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/" });
       picker.style.display = "flex";
     } else {
       picker.style.display = "none";
@@ -4949,7 +4949,7 @@
           });
         }
       });
-      if (window.twemoji) twemoji.parse(box, { folder: "svg", ext: ".svg" });
+      if (window.twemoji) twemoji.parse(box, { folder: "svg", ext: ".svg", base: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/" });
       box.scrollTop = box.scrollHeight;
     });
   }
