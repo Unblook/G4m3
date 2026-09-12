@@ -3637,7 +3637,7 @@
 
   // ---- Arcade: Air Hockey ----
   const AH_ENTRY_COST = 300;
-  const AH_MATCH_SECONDS = 180;
+  const AH_MATCH_SECONDS = 60;
   const AH_WIN_REWARD = 2500;
   const AH_WIDTH = 300;
   const AH_HEIGHT = 480;
@@ -3771,12 +3771,30 @@
       }
     });
 
-    // Cap puck speed.
+    // Cap puck speed, and enforce a minimum so it can never stall out in a corner.
     const maxSpeed = 11;
+    const minSpeed = 3.5;
     const curSpeed = Math.sqrt(ahPuck.vx * ahPuck.vx + ahPuck.vy * ahPuck.vy);
     if (curSpeed > maxSpeed) {
       ahPuck.vx = (ahPuck.vx / curSpeed) * maxSpeed;
       ahPuck.vy = (ahPuck.vy / curSpeed) * maxSpeed;
+    } else if (curSpeed < minSpeed && curSpeed > 0) {
+      ahPuck.vx = (ahPuck.vx / curSpeed) * minSpeed;
+      ahPuck.vy = (ahPuck.vy / curSpeed) * minSpeed;
+    }
+
+    // Failsafe: if the puck barely moves for a stretch (e.g. trapped in a corner), give it a firm nudge toward the center.
+    const movedDist = Math.hypot(ahPuck.x - (ahPuck.lastX ?? ahPuck.x), ahPuck.y - (ahPuck.lastY ?? ahPuck.y));
+    ahPuck.stuckFrames = movedDist < 1.5 ? (ahPuck.stuckFrames || 0) + 1 : 0;
+    ahPuck.lastX = ahPuck.x;
+    ahPuck.lastY = ahPuck.y;
+    if (ahPuck.stuckFrames > 30) {
+      const toCenterX = AH_WIDTH / 2 - ahPuck.x;
+      const toCenterY = AH_HEIGHT / 2 - ahPuck.y;
+      const toCenterLen = Math.hypot(toCenterX, toCenterY) || 1;
+      ahPuck.vx = (toCenterX / toCenterLen) * 6;
+      ahPuck.vy = (toCenterY / toCenterLen) * 6;
+      ahPuck.stuckFrames = 0;
     }
   }
 
