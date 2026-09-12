@@ -2379,7 +2379,7 @@
     "doodlejump": "Doodle Jump.html",
     "doom1": "DOOM.html",
     "doom2": "Doom 2.html",
-    "driftboss": "cldriftboss.html",
+    "driftboss": "https://unblook.github.io/dr1f1b0ss/",
     "drifthunters": "Drift Hunters.html",
     "endoparasitic1": "Endoparasitic.html",
     "endoparasitic2": "Endoparasitic 2.html",
@@ -2737,7 +2737,10 @@
     document.getElementById("detail-desc").textContent = game.desc;
     document.getElementById("detail-storage").textContent = game.storage;
     document.getElementById("detail-date").textContent = game.date;
-    currentGameUrl = "games/" + encodeURIComponent(gameFileOverrides[game.id] || (game.id + ".html"));
+    const override = gameFileOverrides[game.id];
+    currentGameUrl = (override && override.startsWith("http"))
+      ? override
+      : "games/" + encodeURIComponent(override || (game.id + ".html"));
     currentGameId = game.id;
     const embedWrap = document.getElementById("game-embed-wrap");
     const embedFrame = document.getElementById("game-embed-frame");
@@ -2948,10 +2951,12 @@
     const gamesList = document.getElementById("store-games-list");
     gamesList.innerHTML = "";
     games.forEach(game => {
+      const override = gameFileOverrides[game.id];
+      if (override && override.startsWith("http")) return; // externally-embedded games have no local file to sell/download
       const owned = ownedGames.includes(game.id);
       const row = document.createElement("div");
       row.className = "account-row";
-      const fileUrl = "games/" + encodeURIComponent(gameFileOverrides[game.id] || (game.id + ".html"));
+      const fileUrl = "games/" + encodeURIComponent(override || (game.id + ".html"));
       row.innerHTML = `
         <span>${game.title}</span>
         ${owned
