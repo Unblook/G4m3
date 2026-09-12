@@ -1092,8 +1092,15 @@
     position: absolute;
     top: 10px;
     left: 0%;
-    width: 30px;
+    width: 46px;
     transform: translateX(-50%);
+  }
+
+  .claw-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
   }
 
   .claw-cable {
@@ -2025,7 +2032,6 @@
     <!-- ARCADE VIEW -->
     <section id="view-arcade" class="view">
       <h1 class="hero-title">Arcade</h1>
-      <p class="desc">Skill-based games — no luck involved.</p>
       <p class="profile-line" style="margin-top:16px;">G4m3 Coins: <span id="arcade-coin-balance">0</span></p>
 
       <div class="game-picker-row">
@@ -2093,8 +2099,25 @@
             <div class="claw-glass">
               <div class="claw-rail"></div>
               <div class="claw-arm" id="claw-arm">
-                <div class="claw-cable"></div>
-                <div class="claw-pincer"></div>
+                <svg viewBox="0 0 60 72" class="claw-svg" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="clawShaft" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="#7a7a7a"/>
+                      <stop offset="50%" stop-color="#e8e8e8"/>
+                      <stop offset="100%" stop-color="#6a6a6a"/>
+                    </linearGradient>
+                    <radialGradient id="clawMetal" cx="35%" cy="25%" r="80%">
+                      <stop offset="0%" stop-color="#f0f0f0"/>
+                      <stop offset="55%" stop-color="#b8b8b8"/>
+                      <stop offset="100%" stop-color="#6e6e6e"/>
+                    </radialGradient>
+                  </defs>
+                  <rect x="26" y="0" width="8" height="22" fill="url(#clawShaft)" stroke="#555" stroke-width="0.5"/>
+                  <circle cx="30" cy="25" r="9" fill="url(#clawMetal)" stroke="#555" stroke-width="1"/>
+                  <path d="M23,29 Q6,38 11,58 Q13,64 19,61 Q16,48 27,32 Z" fill="url(#clawMetal)" stroke="#4a4a4a" stroke-width="1"/>
+                  <path d="M37,29 Q54,38 49,58 Q47,64 41,61 Q44,48 33,32 Z" fill="url(#clawMetal)" stroke="#4a4a4a" stroke-width="1"/>
+                  <path d="M30,31 Q30,48 30,63 Q30,68 25,66 Q27,48 29,33 Z" fill="url(#clawMetal)" stroke="#4a4a4a" stroke-width="1"/>
+                </svg>
               </div>
               <div class="claw-prizes" id="claw-prizes"></div>
             </div>
@@ -3923,12 +3946,12 @@
 
   // ---- Arcade: Claw Machine ----
   const CLAW_ENTRY_COST = 100;
-  const CLAW_WIN_WINDOW = 1.2; // % — extremely tight, real precision required
+  const CLAW_WIN_WINDOW = 4.5; // % — loosened up since prizes now move much faster
   const CLAW_MOVE_SPEED = 0.9; // % per tick while holding the joystick
   const CLAW_PRIZE_VALUES = [1000, 250, 750, 100, 500];
   const CLAW_LANE_WIDTH = 100 / CLAW_PRIZE_VALUES.length;
   const CLAW_LANE_PAD = 6; // % — keeps each prize's drift inside its own lane, no overlap
-  const CLAW_DRIFT_SPEED = 0.06; // % per tick — slow drift
+  const CLAW_DRIFT_SPEED = 0.3; // % per tick — much faster drift
 
   let clawPos = 0;
   let clawMoveDir = 0;
