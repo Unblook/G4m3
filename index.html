@@ -164,10 +164,11 @@
   /* ---------- Game grid (Home) ---------- */
   .game-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 28px;
-    max-width: 900px;
+    grid-template-columns: repeat(auto-fill, 150px);
+    gap: 20px;
+    max-width: 1000px;
     align-items: start;
+    justify-content: start;
   }
 
   .game-card {
@@ -619,7 +620,7 @@
     font-weight: bold;
     font-size: 20px;
     color: #fff;
-    border-bottom: 2px solid #ffffff22;
+    border-bottom: 2px solid #ffffff33;
   }
 
   .wheel-segment.jackpot {
@@ -627,12 +628,12 @@
     color: #000;
   }
 
-  .wheel-segment.tier-5000 { background: #7b2ff7; }
-  .wheel-segment.tier-1000 { background: #2193b0; }
-  .wheel-segment.tier-500 { background: #e04ea0; }
-  .wheel-segment.tier-100 { background: #2fae5c; }
-  .wheel-segment.tier-50 { background: #d15c1e; }
-  .wheel-segment.tier-10 { background: #3a6bd1; }
+  .wheel-segment.tier-5000 { background: #1a1a1a; }
+  .wheel-segment.tier-1000 { background: #0a0a0a; }
+  .wheel-segment.tier-500 { background: #1a1a1a; }
+  .wheel-segment.tier-100 { background: #0a0a0a; }
+  .wheel-segment.tier-50 { background: #1a1a1a; }
+  .wheel-segment.tier-10 { background: #0a0a0a; }
 
   .wheel-segment .jackpot-label {
     font-size: 13px;
@@ -1416,6 +1417,38 @@
     line-height: 1.4;
   }
 
+  .chat-messages img.chat-image {
+    max-width: 220px;
+    max-height: 220px;
+    border-radius: 8px;
+    margin-top: 4px;
+    display: block;
+  }
+
+  .emoji-picker {
+    max-width: 600px;
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .emoji-picker span {
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.1s ease;
+  }
+
+  .emoji-picker span:hover {
+    background: #ffffff22;
+  }
+
   .chat-message .sender {
     color: #999;
     font-size: 12px;
@@ -2163,6 +2196,12 @@
         <input type="text" id="broadcast-input" class="auth-input" placeholder="Message to show everyone..." onkeydown="if(event.key==='Enter') sendBroadcast();">
         <button class="play-btn" onclick="sendBroadcast()">Send</button>
       </div>
+      <h2 class="section-title" style="margin-top:30px;">Banned IPs</h2>
+      <div class="auth-box">
+        <input type="text" id="ban-ip-input" class="auth-input" placeholder="IP address to ban">
+        <button class="play-btn" onclick="adminBanIp()">Ban IP</button>
+      </div>
+      <div id="banned-ip-list" class="friends-list" style="max-width:400px;"></div>
       <h2 class="section-title" style="margin-top:30px;">Users</h2>
       <div id="admin-content">
         <p class="profile-line">Loading...</p>
@@ -2338,10 +2377,12 @@
           <div class="chat-main">
             <h3 class="auth-heading" id="chat-thread-title">Public Chat</h3>
             <div id="chat-messages" class="chat-messages"></div>
+            <div id="emoji-picker" class="emoji-picker" style="display:none;"></div>
             <div class="chat-input-row">
-              <input type="text" id="chat-input" placeholder="Type a message..." class="auth-input" onkeydown="if(event.key==='Enter') handleSendMessage();">
+              <button class="account-add-btn" onclick="toggleEmojiPicker()" type="button">&#128512;</button>
+              <input type="text" id="chat-input" placeholder="Type a message, or paste an image/GIF link..." class="auth-input" onkeydown="if(event.key==='Enter') handleSendMessage();">
               <p id="chat-guest-notice" class="auth-error" style="display:none;">Guest accounts can't use chat — sign in with an email, username, or Google account.</p>
-              <button class="play-btn" onclick="handleSendMessage()">Send</button>
+              <button class="play-btn" id="chat-send-btn" onclick="handleSendMessage()">Send</button>
             </div>
           </div>
         </div>
@@ -2352,11 +2393,11 @@
 
 <script>
   const games = [
-    { id: "1.8.8", title: "Eaglercraft 1.8.8", genre: "Sandbox" },
-    { id: "1.12.2", title: "Eaglercraft 1.12.2", genre: "Sandbox" },
-    { id: "tuffclient", title: "Tuff Client", genre: "Sandbox" },
-    { id: "pixelclient", title: "Pixel Client 3", genre: "Sandbox" },
-    { id: "shadownetclient", title: "ShadowNet Client", genre: "Sandbox" },
+    { id: "1.8.8", title: "Eaglercraft 1.8.8", genre: "Arcade" },
+    { id: "1.12.2", title: "Eaglercraft 1.12.2", genre: "Arcade" },
+    { id: "tuffclient", title: "Tuff Client", genre: "Arcade" },
+    { id: "pixelclient", title: "Pixel Client 3", genre: "Arcade" },
+    { id: "shadownetclient", title: "ShadowNet Client", genre: "Arcade" },
     { id: "1v1lol", title: "1v1.LOL", genre: "Shooter" },
     { id: "backrooms", title: "Backrooms", genre: "Horror" },
     { id: "badparenting", title: "Bad Parenting", genre: "Horror" },
@@ -2369,19 +2410,19 @@
     { id: "basketrandom", title: "Basket Random", genre: "Sports" },
     { id: "bendy", title: "Bendy and the Ink Machine (Work in Progress)", genre: "Horror" },
     { id: "bindingofisaac", title: "The Binding of Isaac", genre: "Action" },
-    { id: "bitlife", title: "BitLife", genre: "Simulation" },
+    { id: "bitlife", title: "BitLife", genre: "Arcade" },
     { id: "bitplanes", title: "Bit Planes", genre: "Shooter" },
-    { id: "blockblast", title: "Block Blast", genre: "Puzzle" },
+    { id: "blockblast", title: "Block Blast", genre: "Arcade" },
     { id: "bottlejump3d", title: "Bottle Jump 3D (Work in Progress)", genre: "Arcade" },
     { id: "bouncemasters", title: "Bouncemasters", genre: "Arcade" },
     { id: "boxingrandom", title: "Boxing Random", genre: "Sports" },
     { id: "buckshotroulette", title: "Buckshot Roulette (Work in Progress)", genre: "Horror" },
-    { id: "buildnow", title: "Build Now GG", genre: "Sandbox" },
-    { id: "cookieclicker", title: "Cookie Clicker", genre: "Simulation" },
+    { id: "buildnow", title: "Build Now GG", genre: "Arcade" },
+    { id: "cookieclicker", title: "Cookie Clicker", genre: "Arcade" },
     { id: "coreball", title: "Core Ball", genre: "Arcade" },
     { id: "crossyroad", title: "Crossy Road", genre: "Arcade" },
     { id: "cuphead", title: "Cuphead", genre: "Action" },
-    { id: "cuttherope", title: "Cut the Rope", genre: "Puzzle" },
+    { id: "cuttherope", title: "Cut the Rope", genre: "Arcade" },
     { id: "googlebaseball", title: "Doodle Baseball", genre: "Sports" }, 
     { id: "doodlejump", title: "Doodle Jump", genre: "Arcade" },
     { id: "doom1", title: "DOOM", genre: "Shooter" },
@@ -2407,7 +2448,7 @@
     { id: "fnafsl", title: "Five Nights at Freddy's: Sister Location", genre: "Horror" },
     { id: "footballbros", title: "Football Bros", genre: "Sports" },
     { id: "fruitninja", title: "Fruit Ninja", genre: "Arcade" },
-    { id: "gag", title: "Grow a Garden", genre: "Simulation" },
+    { id: "gag", title: "Grow a Garden", genre: "Arcade" },
     { id: "geometrydash", title: "Geometry Dash (Work in Progress)", genre: "Platformer" },
     { id: "gettingoverit", title: "Getting Over It (Work in Progress)", genre: "Platformer" },
     { id: "granny1", title: "Granny", genre: "Horror" },
@@ -2415,7 +2456,7 @@
     { id: "granny3", title: "Granny 3", genre: "Horror" },
     { id: "halflife", title: "Half-Life", genre: "Shooter" },
     { id: "hillclimbracing", title: "Hill Climb Racing", genre: "Racing" },
-    { id: "hollowknight", title: "Hollow Knight", genre: "Adventure" },
+    { id: "hollowknight", title: "Hollow Knight", genre: "Action" },
     { id: "ironlung", title: "Iron Lung", genre: "Horror" },
     { id: "jellydrift", title: "Jelly Drift", genre: "Racing" },
     { id: "jetpackjoyride", title: "Jetpack Joyride (Work in Progress)", genre: "Arcade" },
@@ -2424,48 +2465,48 @@
     { id: "kindergarten2", title: "Kindergarten 2 (Work in Progress)", genre: "Horror" },
     { id: "kindergarten3", title: "Kindergarten 3", genre: "Horror" },
     { id: "learntofly3", title: "Learn to Fly 3", genre: "Arcade" },
-    { id: "melonplayground", title: "Melon Playground", genre: "Simulation" },
+    { id: "melonplayground", title: "Melon Playground", genre: "Arcade" },
     { id: "motox3m", title: "Moto X3M", genre: "Racing" },
     { id: "nazizombies", title: "Nazi Zombies", genre: "Shooter" },
-    { id: "omori", title: "OMORI", genre: "Adventure" },
+    { id: "omori", title: "OMORI", genre: "Action" },
     { id: "ovo", title: "OvO", genre: "Platformer" },
-    { id: "papersplease", title: "Papers, Please", genre: "Simulation" },
-    { id: "peggle", title: "Peggle", genre: "Puzzle" },
+    { id: "papersplease", title: "Papers, Please", genre: "Arcade" },
+    { id: "peggle", title: "Peggle", genre: "Arcade" },
     { id: "pixelgun", title: "Pixel Gun 3D", genre: "Shooter" },
-    { id: "plantsvszombies1", title: "Plants vs. Zombies", genre: "Strategy" },
-    { id: "plantsvszombies2", title: "Plants vs. Zombies 2", genre: "Strategy" },
-    { id: "pokemon", title: "Pokémon", genre: "Adventure" },
-    { id: "raft", title: "Raft (Work in Progress)", genre: "Adventure" },
+    { id: "plantsvszombies1", title: "Plants vs. Zombies", genre: "Action" },
+    { id: "plantsvszombies2", title: "Plants vs. Zombies 2", genre: "Action" },
+    { id: "pokemon", title: "Pokémon", genre: "Action" },
+    { id: "raft", title: "Raft (Work in Progress)", genre: "Action" },
     { id: "ragdollarchers", title: "Ragdoll Archers", genre: "Action" },
     { id: "ragdollhit", title: "Ragdoll Hit", genre: "Action" },
     { id: "repo", title: "R.E.P.O. (Work in Progress)", genre: "Horror" },
     { id: "retrobowl", title: "Retro Bowl", genre: "Sports" },
     { id: "retrobowlcollege", title: "Retro Bowl College", genre: "Sports" },
     { id: "schoolboyrunaway", title: "Schoolboy Runaway", genre: "Horror" },
-    { id: "silksong", title: "Hollow Knight: Silksong (Work in Progress)", genre: "Adventure" },
+    { id: "silksong", title: "Hollow Knight: Silksong (Work in Progress)", genre: "Action" },
     { id: "slenderman", title: "Slender Man", genre: "Horror" },
-    { id: "slimerancher", title: "Slime Rancher", genre: "Simulation" },
+    { id: "slimerancher", title: "Slime Rancher", genre: "Arcade" },
     { id: "slope", title: "Slope", genre: "Arcade" },
     { id: "smashkarts", title: "Smash Karts", genre: "Racing" },
     { id: "snowrider3d", title: "Snow Rider 3D", genre: "Racing" },
     { id: "soccerrandom", title: "Soccer Random", genre: "Sports" },
-    { id: "stardewvalley", title: "Stardew Valley", genre: "Simulation" },
-    { id: "stealabrainrot", title: "Steal a Brainrot", genre: "Simulation" },
+    { id: "stardewvalley", title: "Stardew Valley", genre: "Arcade" },
+    { id: "stealabrainrot", title: "Steal a Brainrot", genre: "Arcade" },
     { id: "stickmanhook", title: "Stickman Hook", genre: "Arcade" },
     { id: "superhot", title: "SUPERHOT", genre: "Shooter" },
     { id: "supermario64", title: "Super Mario 64", genre: "Platformer" },
     { id: "subwaysurfers", title: "Subway Surfers", genre: "Arcade" },
-    { id: "amonus", title: "Among Us", genre: "Party" },
+    { id: "amonus", title: "Among Us", genre: "Arcade" },
     { id: "supermariobros", title: "Super Mario Bros.", genre: "Platformer" },
     { id: "survivalrace", title: "Survival Race", genre: "Racing" },
-    { id: "terraria", title: "Terraria", genre: "Adventure" },
+    { id: "terraria", title: "Terraria", genre: "Action" },
     { id: "thatsnotmyneighbor", title: "That's Not My Neighbor (Work in Progress)", genre: "Horror" },
     { id: "theyarecoming", title: "They Are Coming", genre: "Horror" },
     { id: "tinyfishing", title: "Tiny Fishing", genre: "Arcade" },
     { id: "tombofthemask", title: "Tomb of the Mask", genre: "Platformer" },
     { id: "ucn", title: "Ultimate Custom Night", genre: "Horror" },
     { id: "ultrakill", title: "ULTRAKILL", genre: "Shooter" },
-    { id: "undertale", title: "Undertale", genre: "Adventure" },
+    { id: "undertale", title: "Undertale", genre: "Action" },
     { id: "volleyrandom", title: "Volley Random", genre: "Sports" }
   ].map(g => ({
     ...g,
@@ -4533,6 +4574,28 @@
 
   let activeChatPath = "messages";
 
+  let lastChatSendTime = 0;
+  const CHAT_SLOWMODE_MS = 10000;
+  let chatCooldownInterval = null;
+
+  const CHAT_EMOJIS = ["😀","😂","😍","😎","😭","😡","👍","👎","🔥","💀","🎮","🏀","🎉","❤️","😴","🤔","😱","👀","💯","🙌"];
+
+  window.toggleEmojiPicker = function () {
+    const picker = document.getElementById("emoji-picker");
+    if (picker.style.display === "none") {
+      picker.innerHTML = CHAT_EMOJIS.map(e => `<span onclick="insertEmoji('${e}')">${e}</span>`).join("");
+      picker.style.display = "flex";
+    } else {
+      picker.style.display = "none";
+    }
+  };
+
+  window.insertEmoji = function (emoji) {
+    const input = document.getElementById("chat-input");
+    input.value += emoji;
+    input.focus();
+  };
+
   window.handleSendMessage = async function () {
     const input = document.getElementById("chat-input");
     const text = input.value.trim();
@@ -4541,7 +4604,26 @@
       alert("Guest accounts can't use chat. Sign in with an email, username, or Google account to chat.");
       return;
     }
+    try {
+      const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+      const myIp = userSnap.exists() ? userSnap.data().lastIp : null;
+      if (myIp) {
+        const banSnap = await getDoc(doc(db, "bannedIPs", myIp));
+        if (banSnap.exists()) {
+          alert("You are banned from chat.");
+          return;
+        }
+      }
+    } catch (e) {
+      // Ban check failed — fail open rather than blocking chat entirely for everyone.
+    }
+    const elapsed = Date.now() - lastChatSendTime;
+    if (elapsed < CHAT_SLOWMODE_MS) {
+      return; // Send button is disabled during cooldown, this is just a safety net.
+    }
     input.value = "";
+    lastChatSendTime = Date.now();
+    startChatCooldown();
     await push(ref(rtdb, activeChatPath), {
       text: text,
       senderEmail: currentLabel || currentUser.email || "Guest",
@@ -4549,6 +4631,25 @@
       createdAt: rtdbServerTimestamp()
     });
   };
+
+  function startChatCooldown() {
+    const sendBtn = document.getElementById("chat-send-btn");
+    if (!sendBtn) return;
+    clearInterval(chatCooldownInterval);
+    sendBtn.disabled = true;
+    const tick = () => {
+      const remaining = Math.ceil((CHAT_SLOWMODE_MS - (Date.now() - lastChatSendTime)) / 1000);
+      if (remaining <= 0) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Send";
+        clearInterval(chatCooldownInterval);
+      } else {
+        sendBtn.textContent = "Send (" + remaining + "s)";
+      }
+    };
+    tick();
+    chatCooldownInterval = setInterval(tick, 250);
+  }
 
   const avatarCache = {};
   async function getCachedAvatar(uid) {
@@ -4638,7 +4739,16 @@
         row.appendChild(header);
 
         const textDiv = document.createElement("div");
-        textDiv.textContent = m.text;
+        const imgUrlMatch = (m.text || "").trim().match(/^https?:\/\/\S+\.(png|jpe?g|gif|webp)(\?\S*)?$/i);
+        if (imgUrlMatch) {
+          const imgEl = document.createElement("img");
+          imgEl.className = "chat-image";
+          imgEl.src = m.text.trim();
+          imgEl.alt = "shared image";
+          textDiv.appendChild(imgEl);
+        } else {
+          textDiv.textContent = m.text;
+        }
         row.appendChild(textDiv);
 
         box.appendChild(row);
@@ -4662,7 +4772,7 @@
   window.loadChatDmList = loadChatDmList;
   // ---- Admin ----
   // Replace this with your own Firebase Auth UID (Firebase console > Authentication > Users > copy your row's User UID).
-  const ADMIN_UID = "J1acVdVmxTeTd14vnYFZrBPvcsp1";
+  const ADMIN_UID = "cz4uOyC6i3ZJSKDmf2psy8jgyXG2";
 
   window.sendBroadcast = async function () {
     const input = document.getElementById("broadcast-input");
@@ -4721,15 +4831,20 @@
       const data = docSnap.data();
       const row = document.createElement("div");
       row.className = "account-row";
+      const banIpBtn = data.lastIp
+        ? `<button class="account-add-btn" onclick="adminBanUserIp('${data.lastIp}')">Ban IP</button>`
+        : "";
       row.innerHTML = `
         <span>${displayLabelFor(data)} ${data.email ? "(" + data.email + ")" : ""}</span>
         <input type="number" class="auth-input" id="coin-amt-${uid}" placeholder="Amount" style="width:90px; padding:6px 8px;">
         <button class="account-add-btn" onclick="adminGrantCoins('${uid}')">Give</button>
+        ${banIpBtn}
         <button class="account-add-btn" onclick="adminDeleteUser('${uid}', '${data.username || ""}', '${data.email || ""}')">Delete</button>
       `;
       list.appendChild(row);
     });
     content.appendChild(list);
+    renderBannedIps();
   };
 
   window.adminGrantCoins = async function (uid) {
@@ -4754,6 +4869,46 @@
     if (email) await deleteDoc(doc(db, "emailIndex", email.toLowerCase())).catch(() => {});
     renderAdminPage();
   };
+
+  window.adminBanIp = async function () {
+    const input = document.getElementById("ban-ip-input");
+    const ip = input.value.trim();
+    if (!ip || currentUser.uid !== ADMIN_UID) return;
+    await setDoc(doc(db, "bannedIPs", ip), { bannedAt: Date.now() });
+    input.value = "";
+    renderBannedIps();
+  };
+
+  window.adminBanUserIp = async function (ip) {
+    if (!ip || currentUser.uid !== ADMIN_UID) return;
+    await setDoc(doc(db, "bannedIPs", ip), { bannedAt: Date.now() });
+    renderBannedIps();
+  };
+
+  window.adminUnbanIp = async function (ip) {
+    await deleteDoc(doc(db, "bannedIPs", ip)).catch(() => {});
+    renderBannedIps();
+  };
+
+  async function renderBannedIps() {
+    const list = document.getElementById("banned-ip-list");
+    if (!list || !currentUser || currentUser.uid !== ADMIN_UID) return;
+    const querySnap = await getDocs(collection(db, "bannedIPs"));
+    list.innerHTML = "";
+    if (querySnap.empty) {
+      list.innerHTML = '<p class="profile-line">No banned IPs.</p>';
+      return;
+    }
+    querySnap.forEach(docSnap => {
+      const row = document.createElement("div");
+      row.className = "account-row";
+      row.innerHTML = `
+        <span>${docSnap.id}</span>
+        <button class="account-add-btn" onclick="adminUnbanIp('${docSnap.id}')">Unban</button>
+      `;
+      list.appendChild(row);
+    });
+  }
 
   window.loadFriendRequests = loadFriendRequests;
   window.renderStorePage = renderStorePage;
@@ -4793,6 +4948,23 @@
         photo = d.photo || null;
       }
       if (user.isAnonymous) label = "Guest";
+
+      // Capture public IP and check against the banned list.
+      try {
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipRes.json();
+        const myIp = ipData.ip;
+        await setDoc(doc(db, "users", user.uid), { lastIp: myIp }, { merge: true });
+        const banSnap = await getDoc(doc(db, "bannedIPs", myIp));
+        if (banSnap.exists()) {
+          alert("You have been banned from this site.");
+          await signOut(auth);
+          return;
+        }
+      } catch (e) {
+        // IP lookup failed — not fatal, just skip the ban check this session.
+      }
+
       const chatInputEl = document.getElementById("chat-input");
       const chatGuestNotice = document.getElementById("chat-guest-notice");
       if (chatInputEl && chatGuestNotice) {
