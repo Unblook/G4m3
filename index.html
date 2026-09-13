@@ -1731,6 +1731,61 @@
     flex-shrink: 0;
   }
 
+  .presence-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+    margin-left: 4px;
+  }
+
+  .presence-dot.presence-online {
+    background: #2fae5c;
+    box-shadow: 0 0 5px 1px #2fae5c;
+  }
+
+  .presence-dot.presence-offline {
+    background: #555;
+  }
+
+  .daily-bonus-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .daily-bonus-day {
+    width: 56px;
+    padding: 8px 4px;
+    text-align: center;
+    background: #0a0a0a;
+    border: 2px solid #ffffff33;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  .daily-bonus-day .day-label {
+    color: #888;
+    font-size: 11px;
+  }
+
+  .daily-bonus-day .day-amount {
+    font-weight: bold;
+    margin-top: 2px;
+  }
+
+  .daily-bonus-day.claimed {
+    border-color: #2fae5c;
+    background: #0a1a10;
+  }
+
+  .daily-bonus-day.current {
+    border-color: #ffd700;
+    box-shadow: 0 0 8px 1px #ffd70088;
+  }
+
   .friends-layout {
     display: flex;
     gap: 48px;
@@ -2417,6 +2472,11 @@
         </div>
         <p class="profile-line">Signed in as <span id="profile-email"></span></p>
         <p class="profile-line">G4m3 Coins: <span id="coin-balance">0</span></p>
+
+        <h3 class="auth-heading" style="margin-top:-8px;">Daily Login Bonus</h3>
+        <div id="daily-bonus-days" class="daily-bonus-row"></div>
+        <button class="play-btn" id="daily-bonus-btn" onclick="claimDailyBonus()" style="margin-top:10px;">Claim</button>
+        <p id="daily-bonus-msg" class="profile-line" style="margin-top:8px;"></p>
         <div class="auth-box">
           <input type="text" id="profile-name-input" class="auth-input" placeholder="Display name">
           <button class="play-btn" onclick="handleSaveName()">Save Name</button>
@@ -2983,6 +3043,9 @@
       applyGamesLayout();
       renderFavoritesSections();
     }
+    if (view === "profile" && window.__g4m3SignedIn && typeof window.renderDailyBonus === "function") {
+      window.renderDailyBonus();
+    }
     if (view === "settings") {
       applyGamesLayout();
       applyThemeMode();
@@ -3147,7 +3210,7 @@
     collection, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
-    getDatabase, ref, push, set, onValue, query as rtdbQuery, limitToLast,
+    getDatabase, ref, push, set, onValue, onDisconnect, query as rtdbQuery, limitToLast,
     serverTimestamp as rtdbServerTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -3225,6 +3288,80 @@
       coinInterval = null;
     }
   }
+
+  // ---- Daily Login Bonus ----
+  const DAILY_BONUS_AMOUNTS = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 750, 7: 1000 };
+
+  function todayString() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function yesterdayString() {
+    return new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  }
+
+  async function renderDailyBonus() {
+    if (!currentUser) return;
+    const snap = await getDoc(doc(db, "users", currentUser.uid));
+    const data = snap.exists() ? snap.data() : {};
+    const currentDay = data.loginStreakDay || 0;
+    const alreadyClaimedToday = data.lastLoginClaim === todayString();
+    const nextDay = alreadyClaimedToday ? currentDay : (currentDay === 0 ? 1 : (data.lastLoginClaim === yesterdayString() ? (currentDay % 7) + 1 : 1));
+
+    const daysBox = document.getElementById("daily-bonus-days");
+    if (daysBox) {
+      daysBox.innerHTML = "";
+      for (let d = 1; d <= 7; d++) {
+        const box = document.createElement("div");
+        box.className = "daily-bonus-day";
+        if (d < nextDay || (d === currentDay && alreadyClaimedToday)) box.classList.add("claimed");
+        if (d === nextDay && !alreadyClaimedToday) box.classList.add("current");
+        box.innerHTML = `<div class="day-label">Day ${d}</div><div class="day-amount">${DAILY_BONUS_AMOUNTS[d]}</div>`;
+        daysBox.appendChild(box);
+      }
+    }
+
+    const btn = document.getElementById("daily-bonus-btn");
+    const msg = document.getElementById("daily-bonus-msg");
+    if (btn) {
+      if (alreadyClaimedToday) {
+        btn.disabled = true;
+        btn.textContent = "Come back tomorrow!";
+      } else {
+        btn.disabled = false;
+        btn.textContent = "Claim Day " + nextDay + " (" + DAILY_BONUS_AMOUNTS[nextDay] + " coins)";
+      }
+    }
+    if (msg) msg.textContent = "";
+  }
+
+  window.claimDailyBonus = async function () {
+    if (!currentUser) return;
+    const snap = await getDoc(doc(db, "users", currentUser.uid));
+    const data = snap.exists() ? snap.data() : {};
+    const today = todayString();
+    if (data.lastLoginClaim === today) return; // already claimed, button should be disabled anyway
+
+    const currentDay = data.loginStreakDay || 0;
+    let newDay;
+    if (data.lastLoginClaim === yesterdayString()) {
+      newDay = (currentDay % 7) + 1;
+    } else {
+      newDay = 1;
+    }
+    const reward = DAILY_BONUS_AMOUNTS[newDay];
+
+    currentCoins += reward;
+    updateCoinDisplay();
+    await setDoc(doc(db, "users", currentUser.uid), {
+      coins: currentCoins,
+      loginStreakDay: newDay,
+      lastLoginClaim: today
+    }, { merge: true });
+
+    document.getElementById("daily-bonus-msg").textContent = "Claimed Day " + newDay + "! +" + reward + " coins.";
+    renderDailyBonus();
+  };
 
   // ---- Store ----
   const GAME_DOWNLOAD_COST = 50;
@@ -4584,8 +4721,9 @@
       const avatarHtml = data.photo
         ? `<img class="avatar-small" src="${data.photo}" alt="">`
         : `<div class="avatar-small-fallback">?</div>`;
-      item.innerHTML = `${avatarHtml}<span>${displayLabelFor(data)}</span>`;
+      item.innerHTML = `${avatarHtml}<span>${displayLabelFor(data)}</span><span class="presence-dot presence-offline" data-watch-id="friends-${friendUid}"></span>`;
       list.appendChild(item);
+      watchPresence(friendUid, item.querySelector(".presence-dot"));
     }
   }
 
@@ -4702,6 +4840,30 @@
         <button class="account-add-btn" ${btnDisabled} onclick="addFriendByUid('${uid}', this)">${btnLabel}</button>
       `;
       list.appendChild(row);
+    });
+  }
+
+  function setupPresence() {
+    if (!currentUser) return;
+    const myStatusRef = ref(rtdb, "status/" + currentUser.uid);
+    const connectedRef = ref(rtdb, ".info/connected");
+    onValue(connectedRef, (snap) => {
+      if (snap.val() === false) return;
+      onDisconnect(myStatusRef).set({ state: "offline", lastChanged: rtdbServerTimestamp() }).then(() => {
+        set(myStatusRef, { state: "online", lastChanged: rtdbServerTimestamp() });
+      });
+    });
+  }
+
+  const presenceListeners = {};
+  function watchPresence(uid, dotEl) {
+    if (presenceListeners[uid + "_" + dotEl.dataset.watchId]) return;
+    onValue(ref(rtdb, "status/" + uid), (snap) => {
+      const data = snap.val();
+      const online = data && data.state === "online";
+      dotEl.classList.toggle("presence-online", online);
+      dotEl.classList.toggle("presence-offline", !online);
+      dotEl.title = online ? "Online" : "Offline";
     });
   }
 
@@ -4900,9 +5062,10 @@
       const avatarHtml = data.photo
         ? `<img class="avatar-small" src="${data.photo}" alt="">`
         : `<div class="avatar-small-fallback">?</div>`;
-      row.innerHTML = `${avatarHtml}<span>${name}</span>`;
+      row.innerHTML = `${avatarHtml}<span>${name}</span><span class="presence-dot presence-offline" data-watch-id="dm-${friendUid}"></span>`;
       row.onclick = () => switchToDm(friendUid, name, row);
       list.appendChild(row);
+      watchPresence(friendUid, row.querySelector(".presence-dot"));
     }
   }
 
@@ -5121,6 +5284,7 @@
   window.loadFriendRequests = loadFriendRequests;
   window.renderStorePage = renderStorePage;
   window.getCurrentCoins = () => currentCoins;
+  window.renderDailyBonus = renderDailyBonus;
 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
@@ -5186,6 +5350,8 @@
       applyAvatar(document.getElementById("profile-pic"), document.getElementById("profile-pic-fallback"), photo);
       currentLabel = label;
       await initCoins();
+      setupPresence();
+      renderDailyBonus();
       loadFriends();
       loadAllAccounts();
       loadFriendRequests();
