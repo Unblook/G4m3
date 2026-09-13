@@ -5074,15 +5074,23 @@
     const input = document.getElementById("ban-ip-input");
     const ip = input.value.trim();
     if (!ip || currentUser.uid !== ADMIN_UID) return;
-    await setDoc(doc(db, "bannedIPs", ip), { bannedAt: Date.now() });
-    input.value = "";
-    renderBannedIps();
+    try {
+      await setDoc(doc(db, "bannedIPs", ip), { bannedAt: Date.now() });
+      input.value = "";
+      renderBannedIps();
+    } catch (err) {
+      alert("Couldn't ban that IP: " + err.message);
+    }
   };
 
   window.adminBanUserIp = async function (ip) {
     if (!ip || currentUser.uid !== ADMIN_UID) return;
-    await setDoc(doc(db, "bannedIPs", ip), { bannedAt: Date.now() });
-    renderBannedIps();
+    try {
+      await setDoc(doc(db, "bannedIPs", ip), { bannedAt: Date.now() });
+      renderBannedIps();
+    } catch (err) {
+      alert("Couldn't ban that IP: " + err.message);
+    }
   };
 
   window.adminUnbanIp = async function (ip) {
